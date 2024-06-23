@@ -5,6 +5,15 @@
 
 	const dataURL = createQrSvgDataUrl(config);
 	const svgString = createQrSvgString(config);
+
+	import { page } from '$app/stores';
+	import { beforeUpdate } from 'svelte';
+
+	let showLink = false;
+
+	beforeUpdate(() => {
+		showLink = $page.url.searchParams.get('showLink') === 'true';
+	});
 </script>
 
 <div
@@ -12,11 +21,23 @@
 	style:flex-direction="column"
 	style:align-items="center"
 	style:justify-items="center"
-	style:height="100vh"
+	style:max-height="100vh"
 >
-	<div style:width="50vw" style:max-width="75vh" style:max-height="70vh">
+	<a
+		style:width="70vw"
+		style:max-width="75vh"
+		style:margin-top="10vh"
+		style:color="inherit"
+		download="nft-qr.svg"
+		href={dataURL}
+	>
 		{@html svgString}
-	</div>
+	</a>
 
-	<a style="margin: 40px" class="c-btn" href={dataURL} download="qr.svg">Download QR as SVG</a>
+	<a
+		href={dataURL}
+		style={!showLink ? 'visibility:hidden;' : ''}
+		download="nft-qr.svg"
+		style:margin="1em">Click to download QR as SVG</a
+	>
 </div>

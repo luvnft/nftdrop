@@ -23,3 +23,12 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
+## Deploy
+
+```bash
+# to preview
+firebase hosting:channel:deploy preview
+
+# or to production
+firebase deploy
+```
