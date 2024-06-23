@@ -5,6 +5,8 @@ import cors from "cors";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
+console.log("Starting server");
+
 var serviceAccount = require("./serviceAccountKey.json");
 
 const firebaseApp = initializeApp({
@@ -18,7 +20,7 @@ const app = express();
 app.use(cors());
 app.use(json());
 
-const port = 3000;
+const port = Number(process.env.PORT) ?? 3000;
 
 const uri = process.env.MONGO_CONNECTION_STRING;
 
