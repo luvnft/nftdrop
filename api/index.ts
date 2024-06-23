@@ -1,12 +1,25 @@
+import express, { Request, Response, json } from "express";
+import { MongoClient, ServerApiVersion } from "mongodb";
 import * as dotenv from "dotenv";
+import cors from "cors";
+import { cert, initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+
+var serviceAccount = require("./serviceAccountKey.json");
+
+const firebaseApp = initializeApp({
+  credential: cert(serviceAccount),
+});
+
 dotenv.config();
 
-import express, { Request, Response } from "express";
-
 const app = express();
+
+app.use(cors());
+app.use(json());
+
 const port = 3000;
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = process.env.MONGO_CONNECTION_STRING;
 
 if (!uri) {
@@ -28,18 +41,76 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Successfully connected to MongoDB!");
+    const document = await client.db("admin").command({ ping: 1 });
+    console.log("Successfully connected to MongoDB!", document);
 
-    app.get("/", (req: Request, res: Response) => {
-      res.send("Hello, world!");
+    function getCollection(collectionName: string) {
+      const db = client.db("nft-surprise");
+      const collection = db.collection(collectionName);
+      return collection;
+    }
+
+    const mintCount = await getCollection("mints").countDocuments();
+    console.log("mint count", mintCount);
+
+    async function verifyRequest(req: Request) {
+      const token = req.headers.authorization;
+
+      if (!token) {
+        return undefined;
+      }
+
+      const decodedToken = await getAuth(firebaseApp).verifyIdToken(token);
+
+      return decodedToken;
+    }
+
+    app.post("/mint", async (req: Request, res: Response) => {
+      const decodedToken = await verifyRequest(req);
+      if (!decodedToken) {
+        res.status(401).send("Unauthorized");
+        return;
+      }
+
+      const projectId = req.body.projectId;
+
+      if (!projectId) {
+        res.status(400).send("projectId is required");
+        return;
+      }
+
+      console.log("minting project", projectId, "uid", decodedToken.uid);
+
+      const result = await getCollection("mints").insertOne({
+        projectId: projectId,
+        uid: decodedToken.uid,
+        timestamp: new Date(),
+      });
+
+      console.log("db result", result);
+
+      const newMintId = result.insertedId;
+
+      res.status(200).send({ mintId: newMintId });
+    });
+
+    app.get("/mints", async (req: Request, res: Response) => {
+      const decodedToken = await verifyRequest(req);
+      if (!decodedToken) {
+        res.status(401).send("Unauthorized");
+        return;
+      }
+      const userMints = await getCollection("mints")
+        .find({ uid: decodedToken.uid })
+        .toArray();
+      res.send({ mints: userMints });
     });
 
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
-  } finally {
-    // Ensures that the client will close when you finish/error
+  } catch (e) {
+    console.error("Error", e);
     await client.close();
   }
 }

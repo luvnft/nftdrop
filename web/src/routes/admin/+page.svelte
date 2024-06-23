@@ -1,10 +1,8 @@
 <script>
 	import { createQrSvgString, createQrSvgDataUrl } from '@svelte-put/qr';
 
-	const config = { data: 'http://192.168.10.94:5173/projects?id=moi' };
-
-	const dataURL = createQrSvgDataUrl(config);
-	const svgString = createQrSvgString(config);
+	let dataURL = '';
+	let svgString = '';
 
 	import { page } from '$app/stores';
 	import { beforeUpdate } from 'svelte';
@@ -12,6 +10,11 @@
 	let showLink = false;
 
 	beforeUpdate(() => {
+		console.log($page.url.host);
+		const config = { data: `${$page.url.protocol}//${$page.url.host}/projects/?id=moi` };
+		console.log(config.data);
+		dataURL = createQrSvgDataUrl(config);
+		svgString = createQrSvgString(config);
 		showLink = $page.url.searchParams.get('showLink') === 'true';
 	});
 </script>
