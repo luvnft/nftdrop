@@ -1,7 +1,6 @@
 <script>
 	import { createQrSvgString, createQrSvgDataUrl } from '@svelte-put/qr';
 	import { page } from '$app/stores';
-	import { beforeUpdate } from 'svelte';
 
 	export let projectId;
 	export let showLink = false;
@@ -9,13 +8,10 @@
 	let dataURL = '';
 	let svgString = '';
 
-	beforeUpdate(() => {
-		console.log($page.url.host);
-		const config = { data: `${$page.url.protocol}//${$page.url.host}/projects/?id=${projectId}` };
-		console.log(config.data);
-		dataURL = createQrSvgDataUrl(config);
-		svgString = createQrSvgString(config);
-	});
+	const config = { data: `${$page.url.protocol}//${$page.url.host}/claim/?id=${projectId}` };
+	console.log(config.data);
+	dataURL = createQrSvgDataUrl(config);
+	svgString = createQrSvgString(config);
 </script>
 
 <a

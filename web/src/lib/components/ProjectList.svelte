@@ -79,14 +79,21 @@
 </script>
 
 <div class="project-list">
-	<h2>Your NFT Projects</h2>
+	<h2>My NFT Airdrop Projects</h2>
 
 	<div class="create-project">
 		<h3>Create New Project</h3>
-		<input type="text" bind:value={newProjectName} placeholder="Project Name" />
-		<textarea bind:value={newProjectDescription} placeholder="Project Description"></textarea>
+		<input type="text" bind:value={newProjectName} placeholder="NFT Title" />
+		<input type="text" bind:value={newProjectName} placeholder="Airdrop from (your signature)" />
+		<input type="text" bind:value={newProjectName} placeholder="Link to NFT on Zora" />
+		<input
+			type="text"
+			bind:value={newProjectName}
+			placeholder="Link to image (will be shown on this site)"
+		/>
+		<textarea bind:value={newProjectDescription} placeholder="NFT Description"></textarea>
 		<button on:click={createProject} disabled={isCreatingProject}>
-			{isCreatingProject ? 'Creating...' : 'Create Project'}
+			{isCreatingProject ? 'Creating...' : 'Create NFT Airdrop'}
 		</button>
 	</div>
 
