@@ -10,7 +10,10 @@ export default {
 			fallback: null, // 'index.html',
 			precompress: false
 			//strict: true,
-		})
+		}),
+		alias: {
+			$lib: './src/lib'
+		}
 	} /* ,
 	prerender: {
 		default: true
