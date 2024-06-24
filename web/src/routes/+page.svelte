@@ -7,5 +7,5 @@
 >
 	<h1>Welcome to NFT surprise!</h1>
 	<p>Nothing here <yet class=""></yet></p>
-	<a href="/projects?id=Alpha">Claim NFT</a>
+	<a href="/projects?id=1">Claim NFT</a>
 </div>

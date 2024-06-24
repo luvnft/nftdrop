@@ -1,59 +1,54 @@
-import express, { Request, Response, json } from "express";
-import { MongoClient, ServerApiVersion } from "mongodb";
 import * as dotenv from "dotenv";
+dotenv.config();
+import express, { Request, Response, json } from "express";
 import cors from "cors";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-
-console.log("Starting server");
+import { createLogger, transports } from "winston";
+import {
+  getFirestore,
+  Timestamp,
+  FieldValue,
+  Filter,
+} from "firebase-admin/firestore";
+import { getWallet } from "./base";
 
 var serviceAccount = require("./serviceAccountKey.json");
+
+const logger = createLogger({
+  level: "info",
+  transports: [new transports.Console()],
+});
 
 const firebaseApp = initializeApp({
   credential: cert(serviceAccount),
 });
-
-dotenv.config();
 
 const app = express();
 
 app.use(cors());
 app.use(json());
 
-const port = Number(process.env.PORT) ?? 3000;
+// Set the port from process.env.PORT or default to 3000
 
-const uri = process.env.MONGO_CONNECTION_STRING;
-
-if (!uri) {
-  console.error("MONGO_CONNECTION_STRING missing");
-  process.exit(1);
+let port = process.env.PORT || 3000;
+if (typeof port === "string") {
+  port = parseInt(port);
 }
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+// Create a new client
+
+const firestore = getFirestore(firebaseApp);
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    const document = await client.db("admin").command({ ping: 1 });
-    console.log("Successfully connected to MongoDB!", document);
-
-    function getCollection(collectionName: string) {
-      const db = client.db("nft-surprise");
-      const collection = db.collection(collectionName);
-      return collection;
+    const mint = await firestore.doc("mints/1").get();
+    if (!mint.exists) {
+      logger.error("Can't get 'mints/1', stopping api");
+      return;
     }
-
-    const mintCount = await getCollection("mints").countDocuments();
-    console.log("mint count", mintCount);
+    logger.info("Successfully connected to firestore!", mint);
 
     async function verifyRequest(req: Request) {
       const token = req.headers.authorization;
@@ -66,6 +61,24 @@ async function run() {
 
       return decodedToken;
     }
+
+    app.get("/project/:projectId", async (req: Request, res: Response) => {
+      const projectId = req.params.projectId;
+
+      if (!projectId) {
+        res.status(400).send("projectId is required");
+        return;
+      }
+
+      const project = await firestore.doc(`projects/${projectId}`).get();
+
+      if (!project.exists) {
+        res.status(404).send("Project not found");
+        return;
+      }
+
+      res.send(project.data());
+    });
 
     app.post("/mint", async (req: Request, res: Response) => {
       const decodedToken = await verifyRequest(req);
@@ -81,17 +94,17 @@ async function run() {
         return;
       }
 
-      console.log("minting project", projectId, "uid", decodedToken.uid);
+      logger.info("minting project", projectId, "uid", decodedToken.uid);
 
-      const result = await getCollection("mints").insertOne({
+      const result = await firestore.collection("mints").add({
         projectId: projectId,
         uid: decodedToken.uid,
         timestamp: new Date(),
       });
 
-      console.log("db result", result);
+      logger.info("db result", result);
 
-      const newMintId = result.insertedId;
+      const newMintId = result.id;
 
       res.status(200).send({ mintId: newMintId });
     });
@@ -102,18 +115,36 @@ async function run() {
         res.status(401).send("Unauthorized");
         return;
       }
-      const userMints = await getCollection("mints")
-        .find({ uid: decodedToken.uid })
-        .toArray();
-      res.send({ mints: userMints });
+      const userMints = await firestore
+        .collection("mints")
+        .where("uid", "==", decodedToken.uid)
+        .get();
+
+      res.send({
+        mints: userMints.docs.map((doc) => {
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        }),
+      });
+    });
+
+    app.get("/admin/wallet", async (req: Request, res: Response) => {
+      console.log(getWallet());
+      res.send("ok");
+    });
+
+    app.get("/", (_: Request, res: Response) => {
+      res.send("Hello World!");
     });
 
     app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+      logger.info(`Server is running on port ${port}`);
     });
   } catch (e) {
-    console.error("Error", e);
-    await client.close();
+    logger.error("Error", e);
+    firestore.terminate();
   }
 }
 run().catch(console.dir);
