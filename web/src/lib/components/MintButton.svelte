@@ -1,11 +1,21 @@
 <script>
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
+	import EthereumWalletInput from './EthereumWalletInput.svelte';
+	import { formatTimestamp } from '$lib';
 
 	export let mint;
 	export let isMinting;
 	export let mintingComplete;
-	export let mintingInfo;
+	export let mintedOn;
+	export let userAlreadyMinted;
+	export let project;
+	export let primaryEthereumWallet;
+	export let walletAddressSubmitted;
+	/**
+	 * @type {import("@firebase/auth").User | null}
+	 */
+	export let currentUser;
 
 	const progress = tweened(0, {
 		duration: 1000,
@@ -19,7 +29,7 @@
 	}
 </script>
 
-{#if !mintingComplete}
+{#if !userAlreadyMinted && !mintingComplete}
 	<button on:click={mint} class="primary-button" disabled={isMinting}>
 		{#if isMinting}
 			<div class="minting-progress">
@@ -27,14 +37,34 @@
 			</div>
 			Minting...
 		{:else}
-			Mint NFT
+			Claim the free NFT
 		{/if}
 	</button>
+{:else if userAlreadyMinted}
+	<div class="minting-complete">
+		<h3>✨ Hello again {currentUser?.displayName ?? ''}!</h3>
+		<p>
+			Only 1 NFT per user can be collected and you've already collected your NFT on {formatTimestamp(
+				mintedOn
+			)}.
+		</p>
+		{#if !primaryEthereumWallet}
+			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
+			<!-- {:else if alreadyAirdropped}
+			<p>We have already airdropped the NFT to your wallet {primaryEthereumWallet}</p> -->
+		{:else}
+			<p>We will soon airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
+		{/if}
+	</div>
 {:else}
 	<div class="minting-complete">
 		<h3>🎉 Congratulations!</h3>
-		<p>You've successfully minted your NFT.</p>
-		<p>Total NFTs minted in this project: {mintingInfo.totalMinted}</p>
+		<p>You've successfully collected the NFT #{project.mintCount}.</p>
+		{#if !primaryEthereumWallet}
+			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
+		{:else}
+			<p>We will soon airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
+		{/if}
 	</div>
 {/if}
 
@@ -90,6 +120,7 @@
 		margin: 2em 0;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		text-align: center;
+		max-width: 500px;
 	}
 
 	.minting-complete h3 {

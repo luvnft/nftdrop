@@ -31,7 +31,6 @@
 	<p>Please identify yourself to mint your unique collectible!</p>
 	<button on:click={signInWithGoogle} class="auth-button google">Sign in with Google</button>
 	<button disabled={true} on:click={signInWithFacebook} class="auth-button facebook">
-		<img src="../facebook.svg" alt="Facebook" />
 		Sign in with Facebook
 	</button>
 	<button disabled={true} on:click={signInWithEmail} class="auth-button email">
@@ -68,11 +67,6 @@
 			transform 0.2s,
 			box-shadow 0.2s;
 		font-size: 1rem;
-	}
-
-	.auth-button img {
-		width: 1.5em;
-		height: 1.5em;
 	}
 
 	.auth-button.google {

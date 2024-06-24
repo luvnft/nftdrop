@@ -1,13 +1,10 @@
 <script>
 	import { auth } from '$lib/firebase';
 	export let viewNfts;
-	export let hasNfts;
 </script>
 
 <div class="side-panel">
-	{#if hasNfts}
-		<button on:click={viewNfts} class="secondary-button">View your NFTs</button>
-	{/if}
+	<button on:click={viewNfts} class="secondary-button">View your profile</button>
 	<button on:click={() => auth.signOut()} class="signout-button">Sign out</button>
 </div>
 

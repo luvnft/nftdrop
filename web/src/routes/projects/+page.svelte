@@ -16,20 +16,50 @@
 	 * @type {import("@firebase/auth").User | null}
 	 */
 	let currentUser = null;
+
 	/**
-	 * @type {{ from: any; } | null}
+	 * @type {any | null}
 	 */
 	let project = null;
 	let projectId = '';
 	let isMinting = false;
 	let mintingComplete = false;
-	let mintingInfo = { totalMinted: 0 };
-	let hasNfts = true;
+	/**
+	 * @type {any}
+	 */
+	let mintedOn = undefined;
+	let primaryEthereumWallet = '';
+	let userAlreadyMinted = false;
 
 	auth.onAuthStateChanged(async (user) => {
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		currentUser = user;
 		authInitialised = true;
+		if (user) {
+			if (!projectId) {
+				console.error('User already found but no project ID');
+				return;
+			}
+
+			const token = await user.getIdToken(true);
+			const res = await fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}/canMint`, {
+				method: 'GET',
+				headers: {
+					Authorization: `${token}`
+				}
+			});
+			if (res.status === 200) {
+				const body = await res.json();
+				userAlreadyMinted = body.userAlreadyMinted;
+				mintedOn = body.mintedOn;
+				primaryEthereumWallet = body.primaryEthereumWallet;
+			} else {
+				console.error('Error fetching minting status', res);
+			}
+		} else {
+			primaryEthereumWallet = '';
+			userAlreadyMinted = false;
+		}
 	});
 
 	onMount(async () => {
@@ -56,6 +86,14 @@
 		}
 	});
 
+	/**
+	 * @param {{ detail: string; }} event
+	 */
+	function walletAddressSubmitted(event) {
+		console.log('Wallet address submitted', event.detail);
+		primaryEthereumWallet = event.detail;
+	}
+
 	async function mint() {
 		if (!currentUser) {
 			console.error('No user found');
@@ -77,7 +115,11 @@
 			body: JSON.stringify({ projectId })
 		});
 		const body = await res.json();
-		mintingInfo = { totalMinted: body.totalMinted || 1 };
+
+		project.mintCount = body.mintCount;
+		primaryEthereumWallet = body.userEthereumWallet;
+		mintedOn = body.mintedOn;
+
 		isMinting = false;
 		mintingComplete = true;
 	}
@@ -113,26 +155,36 @@
 <div class="container">
 	<div class="main-content">
 		<h1 class="gradient-text" in:fly={{ y: 20, duration: 1000 }}>
-			You're eligible for a free NFT! ✨
+			✨ You're eligible for a free NFT!
 		</h1>
 
-		{#if authInitialised && currentUser}
+		{#if authInitialised && currentUser && !userAlreadyMinted}
 			<p class="welcome-text" in:fly={{ y: -20, duration: 1000 }}>
 				Welcome, {currentUser.displayName}, you're all set to mint your unique collectible.
 			</p>
-		{:else if authInitialised}
+		{:else if authInitialised && !userAlreadyMinted}
 			<AuthButtons />
 		{/if}
 
 		<ProjectCard {project} />
 
 		{#if currentUser && project}
-			<MintButton {mint} {isMinting} {mintingComplete} {mintingInfo} />
+			<MintButton
+				{mint}
+				{isMinting}
+				{mintingComplete}
+				{mintedOn}
+				{userAlreadyMinted}
+				{project}
+				{currentUser}
+				{primaryEthereumWallet}
+				{walletAddressSubmitted}
+			/>
 		{/if}
 	</div>
 
 	{#if currentUser}
-		<SidePanel {viewNfts} {hasNfts} />
+		<SidePanel {viewNfts} />
 	{/if}
 </div>
 

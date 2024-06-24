@@ -39,6 +39,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@firebase/auth": "^1.7.4"
+		"@firebase/auth": "^1.7.4",
+		"gsap": "^3.12.5"
 	}
 }
