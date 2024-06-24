@@ -100,18 +100,17 @@
 
 	.nft-link {
 		display: inline-block;
-		background: rgb(86, 60, 217);
-		opacity: 0.8;
+		background: rgb(0, 0, 0, 0.7);
 		color: white;
 		padding: 0.5em 1em;
 		border-radius: 25px;
 		text-decoration: none;
-		transition: opacity 0.3s ease;
+		transition: background 0.3s ease;
 		align-self: flex-end; /* This will align the button to the right */
 	}
 
 	.nft-link:hover {
-		opacity: 1;
+		background: rgb(0, 0, 0, 0.4);
 	}
 
 	.gradient-text {
@@ -131,20 +130,5 @@
 
 	.description {
 		margin-bottom: 1em;
-	}
-
-	.nft-link {
-		display: inline-block;
-		background: rgb(86, 60, 217);
-		opacity: 0.8;
-		color: white;
-		padding: 0.5em 1em;
-		border-radius: 25px;
-		text-decoration: none;
-		transition: opacity 0.3s ease;
-	}
-
-	.nft-link:hover {
-		opacity: 1;
 	}
 </style>

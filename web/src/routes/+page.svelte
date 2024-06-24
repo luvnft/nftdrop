@@ -1,47 +1,13 @@
 <script>
-	import { onMount } from 'svelte';
-	import { gsap } from 'gsap';
-
-	/**
-	 * @type {HTMLDivElement}
-	 */
-	let background;
-
-	onMount(() => {
-		for (let i = 0; i < 50; i++) {
-			const particle = document.createElement('div');
-			particle.classList.add('particle');
-			background.appendChild(particle);
-
-			gsap.set(particle, {
-				x: Math.random() * window.innerWidth,
-				y: Math.random() * window.innerHeight,
-				scale: Math.random() * 0.5 + 0.5
-			});
-
-			animateParticle(particle);
-		}
-	});
-
-	/**
-	 * @param {gsap.TweenTarget} particle
-	 */
-	function animateParticle(particle) {
-		gsap.to(particle, {
-			x: Math.random() * window.innerWidth,
-			y: Math.random() * window.innerHeight,
-			duration: Math.random() * 10 + 5,
-			ease: 'none',
-			onComplete: () => animateParticle(particle)
-		});
-	}
+	import BackgroundCanvas from '$lib/components/BackgroundCanvas.svelte';
 </script>
 
 <svelte:head>
-	<title>Mint Wave - Seamless Digital Memorabilia</title>
+	<title>Mint Wave</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </svelte:head>
 
-<div class="background-animation" bind:this={background}></div>
+<BackgroundCanvas />
 
 <header>
 	<nav>
@@ -50,7 +16,9 @@
 			<li><a href="#features">Features</a></li>
 			<li><a href="#how-it-works">How It Works</a></li>
 			<li><a href="#about">About</a></li>
-			<li><a href="/profile" class="cta-button">Launch App</a></li>
+			<li>
+				<a href="/app" class="cta-button">Launch App</a>
+			</li>
 		</ul>
 	</nav>
 </header>
@@ -72,7 +40,7 @@
 			<div class="feature-card">
 				<img src="qr-code-icon.svg" alt="QR Code" class="icon" />
 				<h3>Quick Collect</h3>
-				<p>Allow people to collect the NFT by scanning a QR code</p>
+				<p>Allow people to collect NFTs simply by scanning a QR code</p>
 			</div>
 			<div class="feature-card">
 				<img src="wallet-icon.svg" alt="Wallet" class="icon" />
@@ -111,7 +79,10 @@
 			<div class="step">
 				<div class="step-number">4</div>
 				<h3>Airdrop the NFT</h3>
-				<p>After the event, send the NFT to everyone who signed up</p>
+				<p>
+					After the event, send the NFT to everyone who signed up, with negligible transaction costs
+					thanks to Base and Zora L2
+				</p>
 			</div>
 		</div>
 	</section>
@@ -147,38 +118,22 @@
 
 	<section id="about">
 		<h2>About Mint Wave</h2>
-		<p>
-			Mint Wave revolutionizes how we capture and own digital memories from live events. Our
-			platform bridges the gap between physical experiences and digital ownership, allowing
-			event-goers to collect unique, blockchain-verified memorabilia with just a scan.
-		</p>
 		<div class="cta-container">
-			<a href="/profile" class="cta-button large">Join the Revolution</a>
+			<p style:max-width="800px" style:text-align="center">
+				Mint Wave revolutionizes how we capture and own digital memories from live events.
+				Onboarding everybody on chain has never been easier. Our platform bridges the gap between
+				physical experiences and digital ownership, allowing event-goers to collect unique,
+				blockchain-verified memorabilia with just a scan.
+			</p>
+		</div>
+
+		<div class="cta-container">
+			<a href="/app" class="cta-button large">Join the Onchain Summer</a>
 		</div>
 	</section>
 </main>
 
-<footer>
-	<p>&copy; 2024 reksa</p>
-</footer>
-
 <style>
-	:root {
-		--background-color: #ffffff;
-		--text-color: #333333;
-		--accent-color: #4285f4;
-		--gradient-start: #30cfd0;
-		--gradient-end: #330867;
-	}
-
-	@media (prefers-color-scheme: dark) {
-		:root {
-			--background-color: #1a1a1a;
-			--text-color: #f0f0f0;
-			--accent-color: #64b5f6;
-		}
-	}
-
 	:global(body) {
 		font-family: 'Arial', sans-serif;
 		margin: 0;
@@ -188,20 +143,10 @@
 		overflow-x: hidden;
 	}
 
-	.background-animation {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: -1;
-		opacity: 0.1;
-	}
-
 	header {
 		padding: 1rem 5%;
 		background: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
+		backdrop-filter: blur(6px);
 		position: fixed;
 		width: 90%;
 		z-index: 1000;
@@ -259,6 +204,7 @@
 	}
 
 	.cta-button {
+		border-width: 0;
 		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
 		color: white;
 		padding: 0.5rem 1rem;
@@ -269,12 +215,6 @@
 
 	.cta-button:hover {
 		opacity: 0.9;
-	}
-
-	@media (prefers-color-scheme: dark) {
-		.icon {
-			filter: invert(1) brightness(2);
-		}
 	}
 
 	main {
@@ -310,8 +250,8 @@
 	}
 
 	.feature-card {
-		background: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
+		background: rgba(0, 0, 0, 0.02);
+		backdrop-filter: blur(3px);
 		padding: 2rem;
 		border-radius: 15px;
 		text-align: center;
@@ -328,6 +268,15 @@
 		margin-bottom: 1rem;
 	}
 
+	@media (prefers-color-scheme: dark) {
+		.icon {
+			filter: invert(1) brightness(2);
+		}
+		.feature-card {
+			background: rgba(255, 255, 255, 0.02);
+		}
+	}
+
 	.steps {
 		display: flex;
 		justify-content: space-between;
@@ -340,6 +289,10 @@
 		position: relative;
 	}
 
+	.step p {
+		backdrop-filter: blur(2px);
+	}
+
 	.step-number {
 		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
 		color: white;
@@ -350,13 +303,6 @@
 		justify-content: center;
 		align-items: center;
 		margin: 0 auto 1rem;
-	}
-
-	footer {
-		text-align: center;
-		padding: 2rem;
-		background: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
 	}
 
 	@media (max-width: 768px) {

@@ -1,10 +1,10 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { auth } from '$lib/firebase';
-	export let viewNfts;
 </script>
 
 <div class="side-panel">
-	<button on:click={viewNfts} class="secondary-button">View your profile</button>
+	<button on:click={() => goto('/app')} class="secondary-button">View your profile</button>
 	<button on:click={() => auth.signOut()} class="signout-button">Sign out</button>
 </div>
 

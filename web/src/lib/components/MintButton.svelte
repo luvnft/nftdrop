@@ -116,14 +116,19 @@
 		background: var(--card-background);
 		backdrop-filter: blur(10px);
 		border-radius: 15px;
-		padding: 2em;
 		margin: 2em 0;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		text-align: center;
+		width: 100%;
 		max-width: 500px;
+		overflow-wrap: break-word;
 	}
 
 	.minting-complete h3 {
-		margin-top: 0;
+		margin-top: 1em;
+	}
+
+	.minting-complete p {
+		padding: 1.5em;
 	}
 </style>

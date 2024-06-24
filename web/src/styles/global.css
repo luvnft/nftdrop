@@ -4,8 +4,10 @@
 	--text-color: #333333;
 	--card-background: rgba(255, 255, 255, 0.1);
 	--accent-color: #4285f4;
-	--gradient-start: #30cfd0;
-	--gradient-end: #330867;
+	/* --gradient-start: #30cfd0;
+	--gradient-end: #330867; */
+	--gradient-start: #00b4db;
+	--gradient-end: #0083b0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,8 +17,8 @@
 		--text-color: #f0f0f0;
 		--card-background: rgba(255, 255, 255, 0.05);
 		--accent-color: #64b5f6;
-		--gradient-start: #64b5f6;
-		--gradient-end: #c2185b;
+		/* --gradient-start: #64b5f6;
+		--gradient-end: #c2185b; */
 	}
 }
 
@@ -31,4 +33,10 @@ body {
 	font-size: 16px;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+footer {
+	text-align: center;
+	padding: 2rem;
+	backdrop-filter: blur(2px);
 }

@@ -123,30 +123,10 @@
 		isMinting = false;
 		mintingComplete = true;
 	}
-
-	async function viewNfts() {
-		if (!currentUser) {
-			console.error('No user found');
-			return;
-		}
-		const token = await currentUser.getIdToken(true);
-		if (!token) {
-			console.error('No token found for user', currentUser);
-			return;
-		}
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/mints`, {
-			method: 'GET',
-			headers: {
-				Authorization: `${token}`
-			}
-		});
-		const body = await res.json();
-		console.log('Got response', body);
-		// TODO: Handle the response, perhaps show a modal with the NFTs
-	}
 </script>
 
 <svelte:head>
+	<title>Claim NFT</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </svelte:head>
 
@@ -184,7 +164,7 @@
 	</div>
 
 	{#if currentUser}
-		<SidePanel {viewNfts} />
+		<SidePanel />
 	{/if}
 </div>
 
@@ -197,7 +177,6 @@
 		box-sizing: border-box;
 		position: relative;
 		z-index: 1;
-		background-color: rgba(var(--background-color-rgb), 0.3);
 	}
 
 	.main-content {

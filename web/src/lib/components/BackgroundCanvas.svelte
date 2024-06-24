@@ -45,7 +45,11 @@
 	 */
 	let mouse = { x: 0, y: 0 };
 
+	let isDarkMode = false;
+
 	onMount(() => {
+		isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
 		width = window.innerWidth;
 		height = window.innerHeight;
 		canvas.width = width;
@@ -54,11 +58,11 @@
 
 		if (!ctx) return;
 
-		for (let i = 0; i < 100; i++) {
+		for (let i = 0; i < 88; i++) {
 			particles.push({
 				x: Math.random() * width,
 				y: Math.random() * height,
-				radius: Math.random() * 2 + 1,
+				radius: Math.random() * 1.5 + 0.5,
 				speed: 0.1 + Math.random() * 0.5,
 				brightness: Math.random(),
 				alpha: 0.1 + Math.random() * 0.3,
@@ -86,7 +90,12 @@
 
 			ctx.beginPath();
 			ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-			ctx.fillStyle = `hsla(${60 + particle.brightness * 30}, 100%, ${50 + particle.brightness * 50}%, ${particle.alpha})`;
+			if (isDarkMode) {
+				ctx.fillStyle = `hsla(${60 + particle.brightness * 30}, 100%, ${50 + particle.brightness * 50}%, ${particle.alpha})`;
+			} else {
+				// Darker colors for light mode
+				ctx.fillStyle = `hsla(${210 + particle.brightness * 30}, 70%, ${30 + particle.brightness * 20}%, ${particle.alpha * 2})`;
+			}
 			ctx.fill();
 		}
 
@@ -113,9 +122,9 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		z-index: 0;
+		z-index: -1;
 		opacity: 1;
-		background: radial-gradient(ellipse at bottom, #ffffff 0%, #c3c3c3 100%);
+		background: radial-gradient(ellipse at bottom, #ffffff 0%, #e9e9e9 100%);
 	}
 
 	@media (prefers-color-scheme: dark) {

@@ -141,7 +141,7 @@ async function run() {
 
     // Protected routes
 
-    app.post("/user/addWalletAddress", async (req: Request, res: Response) => {
+    app.post("/user/wallet", async (req: Request, res: Response) => {
       const decodedToken = await verifyRequest(req);
       if (!decodedToken) {
         res.status(401).send("Unauthorized");
@@ -219,15 +219,27 @@ async function run() {
         return;
       }
 
+      const project = (
+        await firestore.doc(`projects/${projectId}`).get()
+      ).data();
+
+      if (!project) {
+        res.status(404).send("Project not found");
+        return;
+      }
+
       logger.info("minting project", projectId, "uid", decodedToken.uid);
 
       const result = await firestore.collection("mints").add({
         projectId: projectId,
         uid: decodedToken.uid,
+        from: project?.from,
+        title: project?.title,
+        description: project?.description,
+        image: project?.image,
+        nftLink: project?.nftLink,
         timestamp: new Date(),
       });
-
-      logger.info("db result", result);
 
       const newMintId = result.id;
 
@@ -250,15 +262,14 @@ async function run() {
         .collection("mints")
         .where("uid", "==", decodedToken.uid)
         .get();
-
-      res.send({
-        mints: userMints.docs.map((doc) => {
-          return {
-            id: doc.id,
-            ...doc.data(),
-          };
-        }),
+      const data = userMints.docs.map((doc) => {
+        return {
+          id: doc.id,
+          ...doc.data(),
+        };
       });
+      console.log("sending mints", data);
+      res.send(data);
     });
 
     app.listen(port, () => {
