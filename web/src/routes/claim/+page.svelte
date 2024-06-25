@@ -27,7 +27,7 @@
 	/**
 	 * @type {any}
 	 */
-	let mintedOn = undefined;
+	let mintedAt = undefined;
 	let primaryEthereumWallet = '';
 	let userAlreadyMinted = false;
 
@@ -51,7 +51,7 @@
 			if (res.status === 200) {
 				const body = await res.json();
 				userAlreadyMinted = body.userAlreadyMinted;
-				mintedOn = body.mintedOn;
+				mintedAt = body.mintedAt;
 				primaryEthereumWallet = body.primaryEthereumWallet;
 			} else {
 				console.error('Error fetching minting status', res);
@@ -117,8 +117,8 @@
 		const body = await res.json();
 
 		project.mintCount = body.mintCount;
-		primaryEthereumWallet = body.userEthereumWallet;
-		mintedOn = body.mintedOn;
+		primaryEthereumWallet = body.mint?.walletAddress;
+		mintedAt = body.mintedAt;
 
 		isMinting = false;
 		mintingComplete = true;
@@ -153,7 +153,7 @@
 				{mint}
 				{isMinting}
 				{mintingComplete}
-				{mintedOn}
+				{mintedAt}
 				{userAlreadyMinted}
 				{project}
 				{currentUser}

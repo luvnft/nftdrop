@@ -7,7 +7,7 @@
 	export let mint;
 	export let isMinting;
 	export let mintingComplete;
-	export let mintedOn;
+	export let mintedAt;
 	export let userAlreadyMinted;
 	export let project;
 	export let primaryEthereumWallet;
@@ -45,13 +45,13 @@
 		<h3>✨ Hello again {currentUser?.displayName ?? ''}!</h3>
 		<p>
 			Only 1 NFT per user can be collected and you've already collected your NFT on {formatTimestamp(
-				mintedOn
+				mintedAt
 			)}.
 		</p>
 		{#if !primaryEthereumWallet}
 			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
-			<!-- {:else if alreadyAirdropped}
-			<p>We have already airdropped the NFT to your wallet {primaryEthereumWallet}</p> -->
+		{:else if mint.airdroppedAt}
+			<p>We have already airdropped the NFT to your wallet {primaryEthereumWallet}</p>
 		{:else}
 			<p>We will soon airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
 		{/if}

@@ -8,6 +8,7 @@
 	import UserDetails from '$lib/components/UserDetails.svelte';
 	import ProjectList from '$lib/components/ProjectList.svelte';
 	import NftGallery from '$lib/components/NFTGallery.svelte';
+	import Loader from '$lib/components/Loader.svelte';
 
 	/**
 	 * @type {import("@firebase/auth").User | null}
@@ -60,6 +61,8 @@
 					<NftGallery {currentUser} />
 				</div>
 			{/if}
+		{:else if currentUser === null}
+			<Loader />
 		{:else}
 			<div class="auth-container" in:fly={{ y: 20, duration: 500 }}>
 				<h1 class="gradient-text">Welcome to Mint Wave</h1>

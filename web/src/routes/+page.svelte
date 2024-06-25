@@ -2,11 +2,6 @@
 	import BackgroundCanvas from '$lib/components/BackgroundCanvas.svelte';
 </script>
 
-<svelte:head>
-	<title>Mint Wave</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-</svelte:head>
-
 <BackgroundCanvas />
 
 <header>
@@ -26,7 +21,7 @@
 <main>
 	<section id="hero">
 		<h1>Collect & Share Digital Memories<br />with Ease</h1>
-		<p class="hero-text">Delight your event visitors with a unique, ownable and tradable NFT</p>
+		<p class="hero-text">Surprise your event visitors with a unique, ownable and tradable NFT</p>
 	</section>
 
 	<section id="features">

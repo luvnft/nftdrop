@@ -26,3 +26,9 @@
 		<QrCode {projectId} {showLink} />
 	{/if}
 </div>
+
+<style>
+	:global(footer) {
+		opacity: 0.2;
+	}
+</style>

@@ -13,6 +13,9 @@
 	 */
 	let projects = [];
 	let newProjectName = '';
+	let newProjectFrom = '';
+	let newProjectNftLink = '';
+	let newProjectImage = '';
 	let newProjectDescription = '';
 	let isCreatingProject = false;
 
@@ -50,6 +53,9 @@
 			const newProject = await res.json();
 			projects = [...projects, newProject];
 			newProjectName = '';
+			newProjectFrom = '';
+			newProjectNftLink = '';
+			newProjectImage = '';
 			newProjectDescription = '';
 		}
 		isCreatingProject = false;
@@ -84,11 +90,11 @@
 	<div class="create-project">
 		<h3>Create New Project</h3>
 		<input type="text" bind:value={newProjectName} placeholder="NFT Title" />
-		<input type="text" bind:value={newProjectName} placeholder="Airdrop from (your signature)" />
-		<input type="text" bind:value={newProjectName} placeholder="Link to NFT on Zora" />
+		<input type="text" bind:value={newProjectFrom} placeholder="Airdrop from (your signature)" />
+		<input type="text" bind:value={newProjectNftLink} placeholder="Link to NFT on Zora" />
 		<input
 			type="text"
-			bind:value={newProjectName}
+			bind:value={newProjectImage}
 			placeholder="Link to image (will be shown on this site)"
 		/>
 		<textarea bind:value={newProjectDescription} placeholder="NFT Description"></textarea>

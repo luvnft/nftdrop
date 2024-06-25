@@ -1,6 +1,7 @@
 <script>
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { onMount } from 'svelte';
+	import Loader from './Loader.svelte';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -44,7 +45,7 @@
 	}
 
 	/**
-	 * @param {{ walletAddress: any; airdropDateTime: string | number | Date; }} nft
+	 * @param {{ walletAddress: any; airdroppedAt: string | number | Date; }} nft
 	 */
 	function getMintStatus(nft) {
 		if (!nft.walletAddress) {
@@ -52,13 +53,14 @@
 				status: 'Waiting for you to add your wallet address on your Profile',
 				class: 'status-unknown'
 			};
-		} else if (!nft.airdropDateTime) {
-			return { status: `Waiting for airdrop to ${nft.walletAddress}`, class: 'status-waiting' };
-		} else {
+		} else if (nft.airdroppedAt) {
+			console.log(nft.airdroppedAt);
 			return {
-				status: `Airdropped to ${nft.walletAddress} on ${new Date(nft.airdropDateTime).toLocaleString()}`,
+				status: `Airdropped to ${nft.walletAddress} at ${new Date(nft.airdroppedAt).toLocaleString()}`,
 				class: 'status-airdropped'
 			};
+		} else {
+			return { status: `Waiting for airdrop to ${nft.walletAddress}`, class: 'status-waiting' };
 		}
 	}
 </script>
@@ -67,7 +69,7 @@
 	<h2>{currentUser.displayName && currentUser.displayName + "'s "}NFT Collection</h2>
 
 	{#if isLoading}
-		<p>Loading your NFTs...</p>
+		<Loader />
 	{:else if nfts.length > 0}
 		<div class="nft-grid">
 			{#each nfts as nft (nft.id)}
@@ -167,6 +169,12 @@
 	.status-waiting {
 		background-color: rgba(0, 0, 255, 0.2);
 		color: #0000b3;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.status-waiting {
+			color: #4c4ce0;
+		}
 	}
 
 	.status-airdropped {

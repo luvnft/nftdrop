@@ -10,3 +10,12 @@ export function setUserWallet(token: string, walletAddress: string) {
 		body: JSON.stringify({ primaryEthereumWallet: walletAddress })
 	});
 }
+
+export function getUserData(token: string) {
+	return fetch(`${PUBLIC_API_BASE_URL}/user`, {
+		method: 'GET',
+		headers: {
+			Authorization: `${token}`
+		}
+	});
+}

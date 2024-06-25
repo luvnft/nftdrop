@@ -1,16 +1,11 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-import express, { Request, Response, json } from "express";
+import express, { NextFunction, Request, Response, json } from "express";
 import cors from "cors";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { createLogger, transports } from "winston";
-import {
-  getFirestore,
-  Timestamp,
-  FieldValue,
-  Filter,
-} from "firebase-admin/firestore";
+import { getFirestore } from "firebase-admin/firestore";
 import { getWallet } from "./base";
 
 var serviceAccount = require("./serviceAccountKey.json");
@@ -29,14 +24,10 @@ const app = express();
 app.use(cors());
 app.use(json());
 
-// Set the port from process.env.PORT or default to 3000
-
 let port = process.env.PORT || 3000;
 if (typeof port === "string") {
   port = parseInt(port);
 }
-
-// Create a new client
 
 const firestore = getFirestore(firebaseApp);
 
@@ -82,6 +73,35 @@ async function getProjectMintCount(projectId: any) {
   return result.data();
 }
 
+type UserData = {
+  primaryEthereumWallet?: string;
+};
+
+async function getUserData(uid: string): Promise<UserData> {
+  const res = await firestore.doc(`users/${uid}`).get();
+  if (!res.exists) {
+    return {};
+  }
+  return res.data() ?? {};
+}
+
+async function verifyRequest(req: Request) {
+  try {
+    const token = req.headers.authorization;
+
+    if (!token) {
+      return undefined;
+    }
+
+    const decodedToken = await getAuth(firebaseApp).verifyIdToken(token);
+
+    return decodedToken;
+  } catch (e) {
+    logger.error("Error verifying token", e, req.headers.authorization);
+    return undefined;
+  }
+}
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -92,22 +112,10 @@ async function run() {
     }
     logger.info("Successfully connected to firestore!", mint);
 
-    async function verifyRequest(req: Request) {
-      try {
-        const token = req.headers.authorization;
-
-        if (!token) {
-          return undefined;
-        }
-
-        const decodedToken = await getAuth(firebaseApp).verifyIdToken(token);
-
-        return decodedToken;
-      } catch (e) {
-        logger.error("Error verifying token", e, req.headers.authorization);
-        return undefined;
-      }
-    }
+    app.use((err: Error, req: Request, res: Response, _: NextFunction) => {
+      console.error(err.stack);
+      res.status(500).send("Something broke!");
+    });
 
     // Unprotected routes
 
@@ -159,11 +167,45 @@ async function run() {
         await firestore.doc(`users/${decodedToken.uid}`).set({
           primaryEthereumWallet,
         });
+        const mintsWithWrongWalletAddress = await firestore
+          .collection("mints")
+          .where("uid", "==", decodedToken.uid)
+          .where("aidroppedOn", "==", null)
+          .where("walletAddress", "!=", primaryEthereumWallet)
+          .get();
+
+        if (mintsWithWrongWalletAddress.size > 0) {
+          const mintIds = mintsWithWrongWalletAddress.docs.map((doc) => doc.id);
+          logger.info(
+            "setting walletAddress for mints to",
+            primaryEthereumWallet,
+            mintIds
+          );
+          await Promise.all(
+            mintIds.map((id) =>
+              firestore.doc(`mints/${id}`).update({
+                walletAddress: primaryEthereumWallet,
+              })
+            )
+          );
+        }
       } catch (e) {
         logger.error(e);
+        res.status(500).send("Error setting wallet");
       }
 
       res.send("ok");
+    });
+
+    app.get("/user", async (req: Request, res: Response) => {
+      const decodedToken = await verifyRequest(req);
+      if (!decodedToken) {
+        res.status(401).send("Unauthorized");
+        return;
+      }
+      const user = await getUserData(decodedToken.uid);
+
+      return res.send(user);
     });
 
     app.get(
@@ -182,9 +224,7 @@ async function run() {
           return;
         }
 
-        const user = await firestore.doc(`users/${decodedToken.uid}`).get();
-
-        const primaryEthereumWallet = user?.data()?.primaryEthereumWallet;
+        const { primaryEthereumWallet } = await getUserData(decodedToken.uid);
 
         const userMint = await getUserMint(projectId, decodedToken.uid);
 
@@ -194,7 +234,7 @@ async function run() {
 
         res.send({
           userAlreadyMinted: true,
-          mintedOn: userMint.timestamp.toDate(),
+          mintedAt: userMint.timestamp.toDate(),
           primaryEthereumWallet,
         });
       }
@@ -228,9 +268,9 @@ async function run() {
         return;
       }
 
-      logger.info("minting project", projectId, "uid", decodedToken.uid);
+      const { primaryEthereumWallet } = await getUserData(decodedToken.uid);
 
-      const result = await firestore.collection("mints").add({
+      const addMint: any = {
         projectId: projectId,
         uid: decodedToken.uid,
         from: project?.from,
@@ -239,7 +279,17 @@ async function run() {
         image: project?.image,
         nftLink: project?.nftLink,
         timestamp: new Date(),
-      });
+        walletAddress: primaryEthereumWallet ?? null,
+        airdroppedAt: null,
+      };
+
+      logger.info(
+        `minting project ${projectId} for uid ${
+          decodedToken.uid
+        } ${JSON.stringify(addMint)}`
+      );
+
+      const result = await firestore.collection("mints").add(addMint);
 
       const newMintId = result.id;
 
@@ -249,7 +299,7 @@ async function run() {
         mintCount,
       });
 
-      res.status(200).send({ mintId: newMintId, mintCount });
+      res.status(200).send({ mintId: newMintId, mintCount, mint: addMint });
     });
 
     app.get("/mints", async (req: Request, res: Response) => {
@@ -263,12 +313,14 @@ async function run() {
         .where("uid", "==", decodedToken.uid)
         .get();
       const data = userMints.docs.map((doc) => {
+        const docData = doc.data();
         return {
           id: doc.id,
-          ...doc.data(),
+          ...docData,
+          timestamp: docData.timestamp.toDate(),
+          airdroppedAt: docData.airdroppedAt?.toDate(),
         };
       });
-      console.log("sending mints", data);
       res.send(data);
     });
 

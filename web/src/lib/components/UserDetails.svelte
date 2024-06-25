@@ -41,14 +41,20 @@
 	<h2>User Profile</h2>
 	<p><strong>Email:</strong> {currentUser.email}</p>
 	<p><strong>Name:</strong> {currentUser.displayName}</p>
-	<p><strong>User ID:</strong> {currentUser.uid}</p>
 
+	<p>
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+		<strong on:click={() => console.log(JSON.stringify(currentUser, null, 2))}>User ID:</strong>
+		{currentUser.uid}
+	</p>
 	<div class="wallet-section">
 		<h3>Ethereum Wallet</h3>
 		{#if primaryEthereumWallet && !isEditingWallet}
 			<p>{primaryEthereumWallet}</p>
 			<button on:click={() => (isEditingWallet = true)}>Edit</button>
 		{:else if isEditingWallet}
+			<p>{primaryEthereumWallet}</p>
 			<EthereumWalletInput on:walletAddressSubmitted={updateWalletAddress} hideInfo={true} />
 			<button style:margin-top="2em" on:click={() => (isEditingWallet = false)}>Cancel</button>
 		{:else}
