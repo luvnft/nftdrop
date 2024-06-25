@@ -9,8 +9,6 @@ if (!BASE_RPC_URL) {
 }
 
 if (!WALLET_PRIVATE_KEY) {
-  //const newWallet = ethers.Wallet.createRandom();
-  //console.log(newWallet, newWallet.privateKey);
   throw new Error("WALLET_PRIVATE_KEY is required");
 }
 

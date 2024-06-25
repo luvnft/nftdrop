@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import { firestore } from "../config/firebase";
 
 export interface Mint {
@@ -8,9 +9,9 @@ export interface Mint {
   description: string;
   image: string;
   nftLink: string;
-  timestamp: Date;
+  timestamp: Timestamp;
   walletAddress: string | null;
-  airdroppedAt: Date | null;
+  airdroppedAt: Timestamp | null;
 }
 
 export async function getUserMint(

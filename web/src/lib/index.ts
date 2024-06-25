@@ -1,6 +1,5 @@
 // place files you want to import through the `$lib` alias in this folder.
 export function getLocale() {
-	console.log(navigator.languages);
 	return navigator.languages && navigator.languages.length
 		? navigator.languages[0]
 		: navigator.language;

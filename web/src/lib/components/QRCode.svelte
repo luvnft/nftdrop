@@ -9,7 +9,6 @@
 	let svgString = '';
 
 	const config = { data: `${$page.url.protocol}//${$page.url.host}/claim/?id=${projectId}` };
-	console.log(config.data);
 	dataURL = createQrSvgDataUrl(config);
 	svgString = createQrSvgString(config);
 </script>

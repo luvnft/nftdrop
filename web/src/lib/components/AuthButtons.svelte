@@ -1,4 +1,6 @@
 <script>
+	export let claimOpen = true;
+
 	import { auth } from '$lib/firebase';
 	import {
 		signInWithPopup,
@@ -28,7 +30,13 @@
 </script>
 
 <div class="auth-container">
-	<p>Please identify yourself to mint your unique collectible!</p>
+	{#if claimOpen}
+		<p>Please identify yourself to mint your unique collectible!</p>
+	{:else}
+		<p>
+			Claiming is closed for this project but you can still sign in to make your next claim easier!
+		</p>
+	{/if}
 	<button on:click={signInWithGoogle} class="auth-button google">Sign in with Google</button>
 	<button disabled={true} on:click={signInWithFacebook} class="auth-button facebook">
 		Sign in with Facebook

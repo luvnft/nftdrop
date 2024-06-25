@@ -14,6 +14,7 @@
 	 * @type {import("@firebase/auth").User | null}
 	 */
 	let currentUser = null;
+	let authInitialised = false;
 	let activeSection = 'projects';
 
 	onMount(() => {
@@ -24,6 +25,7 @@
 
 		auth.onAuthStateChanged((user) => {
 			currentUser = user;
+			authInitialised = true;
 		});
 	});
 
@@ -61,7 +63,7 @@
 					<NftGallery {currentUser} />
 				</div>
 			{/if}
-		{:else if currentUser === null}
+		{:else if !authInitialised}
 			<Loader />
 		{:else}
 			<div class="auth-container" in:fly={{ y: 20, duration: 500 }}>
@@ -95,6 +97,10 @@
 
 	.auth-container {
 		text-align: center;
+		align-items: center;
+		justify-content: center;
+		display: flex;
+		flex-direction: column;
 		max-width: 400px;
 		margin: 0 auto;
 	}

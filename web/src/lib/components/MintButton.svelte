@@ -30,14 +30,16 @@
 </script>
 
 {#if !userAlreadyMinted && !mintingComplete}
-	<button on:click={mint} class="primary-button" disabled={isMinting}>
+	<button on:click={mint} class="primary-button" disabled={isMinting || !project.claimOpen}>
 		{#if isMinting}
 			<div class="minting-progress">
 				<div class="progress-bar" style="width: {$progress * 100}%"></div>
 			</div>
 			Minting...
-		{:else}
+		{:else if project.claimOpen}
 			Claim the free NFT
+		{:else}
+			Claiming is closed
 		{/if}
 	</button>
 {:else if userAlreadyMinted}

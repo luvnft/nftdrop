@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import {
   createMint,
   getProjectMintCount,
@@ -21,6 +22,10 @@ export async function mintNFT(
     throw new Error("Project not found");
   }
 
+  if (!project.claimOpen) {
+    throw new Error("Claiming is not open for this project");
+  }
+
   const mintData: Mint = {
     projectId,
     uid,
@@ -29,7 +34,7 @@ export async function mintNFT(
     description: project.description,
     image: project.image,
     nftLink: project.nftLink,
-    timestamp: new Date(),
+    timestamp: Timestamp.fromDate(new Date()),
     walletAddress: userData.primaryEthereumWallet ?? null,
     airdroppedAt: null,
   };

@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { fly } from 'svelte/transition';
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { auth } from '$lib/firebase';
@@ -91,7 +91,6 @@
 	 * @param {{ detail: string; }} event
 	 */
 	function walletAddressSubmitted(event) {
-		console.log('Wallet address submitted', event.detail);
 		primaryEthereumWallet = event.detail;
 	}
 
@@ -108,6 +107,15 @@
 			return;
 		}
 		const res = await createMint(token, projectId);
+
+		if (res.status !== 200) {
+			console.error('Error minting', res);
+			isMinting = false;
+			if ((await res.text()).includes('not open')) {
+				location.reload();
+			}
+			return;
+		}
 		const body = await res.json();
 
 		project.mintCount = body.mintCount;
@@ -129,15 +137,24 @@
 <div class="container">
 	<div class="main-content">
 		<h1 class="gradient-text" in:fly={{ y: 20, duration: 1000 }}>
-			✨ You're eligible for a free NFT!
+			{#if project === null || project.claimOpen}
+				✨ You're eligible for a free NFT!
+			{:else}
+				🚫 Claiming is closed for this project
+			{/if}
 		</h1>
 
 		{#if authInitialised && currentUser && !userAlreadyMinted}
 			<p class="welcome-text" in:fly={{ y: -20, duration: 1000 }}>
-				Welcome, {currentUser.displayName}, you're all set to mint your unique collectible.
+				Welcome, {currentUser.displayName},
+				{#if project?.claimOpen}
+					you're all set to mint your unique collectible.
+				{:else}
+					the project admin has closed the claiming for this project.
+				{/if}
 			</p>
 		{:else if authInitialised && !userAlreadyMinted}
-			<AuthButtons />
+			<AuthButtons claimOpen={project.claimOpen} />
 		{/if}
 
 		<ProjectCard {project} />

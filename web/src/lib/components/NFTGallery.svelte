@@ -49,7 +49,6 @@
 				class: 'status-unknown'
 			};
 		} else if (nft.airdroppedAt) {
-			console.log(nft.airdroppedAt);
 			return {
 				status: `Airdropped to ${nft.walletAddress} at ${new Date(nft.airdroppedAt).toLocaleString()}`,
 				class: 'status-airdropped'

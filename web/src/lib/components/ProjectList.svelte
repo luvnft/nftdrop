@@ -1,7 +1,7 @@
 <script>
-	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -18,6 +18,7 @@
 	let newProjectImage = '';
 	let newProjectDescription = '';
 	let isCreatingProject = false;
+	let showCreateForm = false;
 
 	onMount(() => {
 		if (currentUser) {
@@ -46,27 +47,89 @@
 		if (res.status === 200) {
 			const newProject = await res.json();
 			projects = [...projects, newProject];
-			newProjectTitle = '';
-			newProjectFrom = '';
-			newProjectNftLink = '';
-			newProjectImage = '';
-			newProjectDescription = '';
+			resetForm();
 		}
 		isCreatingProject = false;
 	}
 
+	function resetForm() {
+		newProjectTitle = '';
+		newProjectFrom = '';
+		newProjectNftLink = '';
+		newProjectImage = '';
+		newProjectDescription = '';
+		showCreateForm = false;
+	}
+
 	/**
 	 * @param {string} projectId
+	 * @param {boolean} claimOpen
 	 */
-	async function deleteProject(projectId) {
-		if (confirm('Are you sure you want to delete this project?')) {
+	async function setProjectClaimOpen(projectId, claimOpen) {
+		const message = claimOpen
+			? 'Are you sure you want to allow claiming for this project? Everyone with the QR code or the link will be able to claim the NFT.'
+			: 'Are you sure you want to disable claiming for this project?';
+		if (confirm(message)) {
 			const token = await currentUser.getIdToken(true);
-			const res = await api.deleteProject(token, projectId);
+			const res = await api.setProjectClaimOpen(token, projectId, claimOpen);
 			if (res.status === 200) {
-				projects = projects.filter((project) => project.id !== projectId);
+				projects = projects.map((project) => {
+					if (project.id === projectId) {
+						return { ...project, claimOpen };
+					}
+					return project;
+				});
 			}
 		}
 	}
+
+	/* async function copyWalletAddresses(projectId) {
+		const token = await currentUser.getIdToken(true);
+		const res = await api.getProjectWalletAddresses(token, projectId);
+		if (res.status === 200) {
+			const addresses = await res.json();
+			navigator.clipboard.writeText(addresses.join('\n'));
+			alert('Wallet addresses copied to clipboard!');
+		}
+	} */
+	/**
+	 * @param {string} projectId
+	 */
+	async function copyWalletAddresses(projectId) {
+		const addresses = [
+			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92',
+			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92',
+			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92'
+		];
+		navigator.clipboard.writeText(addresses.join('\n'));
+		projects = projects.map((project) => {
+			if (project.id === projectId) {
+				return { ...project, walletAddresses: addresses };
+			}
+			return project;
+		});
+		let airdropped = confirm(
+			'Wallet addresses copied to clipboard! Confirm to let these users know you started the airdrop. Cancel if you are not ready to start the airdrop.'
+		);
+		airdropped = confirm(
+			'Confirming means you already did the airdrop. Please cancel if you did not. You cannot copy these addresses again if you confirm.'
+		);
+		if (airdropped) {
+			/* const token = await currentUser.getIdToken(true);
+			const res = await api.airdropNFT(token, projectId, addresses);
+			if (res.status === 200) {
+				alert('Airdrop started!');
+			} */
+		}
+	}
+
+	/**
+	 * @param {{ showAddresses: boolean; }} project
+	 */
+	/* function toggleShowAddresses(project) {
+		project.showAddresses = !project.showAddresses;
+		projects = [...projects];
+	} */
 
 	$: if (currentUser) {
 		fetchProjects();
@@ -78,18 +141,40 @@
 
 	<div class="create-project">
 		<h3>Create New Project</h3>
-		<input type="text" bind:value={newProjectTitle} placeholder="NFT Title" />
-		<input type="text" bind:value={newProjectFrom} placeholder="Airdrop from (your signature)" />
-		<input type="text" bind:value={newProjectNftLink} placeholder="Link to NFT on Zora" />
-		<input
-			type="text"
-			bind:value={newProjectImage}
-			placeholder="Link to image (will be shown on this site)"
-		/>
-		<textarea bind:value={newProjectDescription} placeholder="NFT Description"></textarea>
-		<button on:click={createProject} disabled={isCreatingProject}>
-			{isCreatingProject ? 'Creating...' : 'Create NFT Airdrop'}
-		</button>
+		<p>
+			Before creating a project, please post a new NFT on <a
+				href="https://zora.co/create"
+				target="_blank"
+				class="text-link">zora.co/create</a
+			>. This will incur a small gas fee.
+		</p>
+		{#if !showCreateForm}
+			<button on:click={() => (showCreateForm = true)} class="btn btn-primary">
+				I already created my NFT
+			</button>
+		{:else}
+			<div transition:fade>
+				<input type="text" bind:value={newProjectTitle} placeholder="NFT Title" />
+				<input
+					type="text"
+					bind:value={newProjectFrom}
+					placeholder="Airdrop from (your signature)"
+				/>
+				<input type="text" bind:value={newProjectNftLink} placeholder="Link to NFT on Zora" />
+				<input
+					type="text"
+					bind:value={newProjectImage}
+					placeholder="Link to image (will be shown on this site)"
+				/>
+				<textarea bind:value={newProjectDescription} placeholder="NFT Description" />
+				<div class="button-group">
+					<button on:click={createProject} disabled={isCreatingProject} class="btn btn-primary">
+						{isCreatingProject ? 'Creating...' : 'Create NFT Airdrop'}
+					</button>
+					<button on:click={resetForm} class="btn btn-secondary">Cancel</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	{#if projects.length > 0}
@@ -97,23 +182,41 @@
 			{#each projects as project (project.id)}
 				<li>
 					<div class="project-info">
-						<h3>{project.name}</h3>
+						<h3>{project.title}</h3>
 						<p>{project.description}</p>
 						<p>Mint Count: {project.mintCount || 0}</p>
+						<p class="claim-status">
+							{project.claimOpen
+								? 'Claiming is now open for everyone with the link'
+								: 'Claiming is closed'}
+						</p>
 					</div>
 					<div class="project-actions">
-						<a href="/app/project/{project.id}" class="view-project">View Project</a>
-						<button on:click={() => deleteProject(project.id)} class="delete-project">Delete</button
+						<a href="/claim/?id={project.id}" class="btn btn-primary">View Claim Page</a>
+						<a href="/qr/?id=${project.id}" class="btn btn-secondary">Get QR Code</a>
+						<button
+							on:click={() => setProjectClaimOpen(project.id, !project.claimOpen)}
+							class="btn btn-tertiary"
 						>
-						{#if project.qrCode}
-							<button on:click={() => goto(`/qr/?id=${project.id}`)} class="download-qr"
-								>See QR</button
-							>
-						{/if}
+							{project.claimOpen ? 'Disable claim' : 'Allow claim'}
+						</button>
+						<button on:click={() => copyWalletAddresses(project.id)} class="btn btn-secondary">
+							Start Airdrop
+						</button>
+						<!-- <button on:click={() => toggleShowAddresses(project)} class="btn btn-secondary">
+							{project.showAddresses ? 'Hide Addresses' : 'Show Addresses'}
+						</button> -->
 					</div>
-					{#if project.qrCode}
-						<img src={project.qrCode} alt="Project QR Code" class="qr-code" />
-					{/if}
+					<!-- {#if project.showAddresses}
+						<div class="wallet-addresses" transition:fade>
+							<h4>Wallet Addresses:</h4>
+							<ul>
+								{#each project.walletAddresses || [] as address}
+									<li>{address}</li>
+								{/each}
+							</ul>
+						</div>
+					{/if} -->
 				</li>
 			{/each}
 		</ul>
@@ -129,14 +232,15 @@
 	}
 
 	h2,
-	h3 {
+	h3,
+	h4 {
 		color: var(--accent-color);
 	}
 
 	.create-project {
 		background: rgba(255, 255, 255, 0.1);
 		backdrop-filter: blur(6px);
-		padding: 1rem;
+		padding: 1rem 3rem 1rem 2rem;
 		border-radius: 15px;
 		margin-bottom: 2rem;
 	}
@@ -144,12 +248,13 @@
 	input,
 	textarea {
 		width: 100%;
-		padding: 0.5rem;
+		padding: 0.75rem;
 		margin-bottom: 1rem;
-		border-radius: 5px;
+		border-radius: 8px;
 		border: 1px solid var(--accent-color);
 		background: rgba(255, 255, 255, 0.1);
 		color: var(--text-color);
+		font-size: 1rem;
 	}
 
 	textarea {
@@ -157,23 +262,48 @@
 		resize: vertical;
 	}
 
-	button {
+	.btn {
+		padding: 0.75rem 1.5rem;
+		border-radius: 25px;
+		font-size: 1rem;
+		font-weight: bold;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		border: none;
+		text-decoration: none;
+		display: inline-block;
+		text-align: center;
+	}
+
+	.btn-primary {
 		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
 		color: white;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 25px;
-		cursor: pointer;
-		transition: opacity 0.3s ease;
 	}
 
-	button:hover:not(:disabled) {
-		opacity: 0.9;
+	.btn-secondary {
+		background: rgba(255, 255, 255, 0.2);
+		color: var(--text-color);
 	}
 
-	button:disabled {
+	.btn-tertiary {
+		background: rgba(255, 0, 0, 0.2);
+		color: var(--text-color);
+	}
+
+	.btn:hover:not(:disabled) {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	}
+
+	.btn:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.button-group {
+		display: flex;
+		gap: 1rem;
+		justify-content: flex-start;
 	}
 
 	ul {
@@ -184,64 +314,48 @@
 	li {
 		background: rgba(255, 255, 255, 0.1);
 		backdrop-filter: blur(6px);
-		padding: 1rem;
+		padding: 2rem;
 		border-radius: 15px;
-		margin-bottom: 1rem;
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-between;
-		align-items: center;
+		margin-bottom: 1.5rem;
 	}
 
 	.project-info {
-		flex: 1;
-		min-width: 200px;
+		margin-bottom: 1.5rem;
+	}
+
+	.claim-status {
+		font-weight: bold;
+		color: var(--accent-color);
 	}
 
 	.project-actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 1rem;
 		align-items: center;
 	}
 
-	.view-project,
-	.delete-project,
-	.download-qr {
-		text-decoration: none;
-		padding: 0.5rem 1rem;
-		border-radius: 25px;
-		transition: opacity 0.3s ease;
+	.wallet-addresses {
+		margin-top: 1.5rem;
+		background: rgba(255, 255, 255, 0.05);
+		padding: 1rem;
+		border-radius: 8px;
 	}
 
-	.view-project {
-		background: var(--accent-color);
-		color: white;
-	}
-
-	.delete-project {
-		background: #ff4136;
-		color: white;
-	}
-
-	.download-qr {
-		background: #2ecc40;
-		color: white;
-	}
-
-	.qr-code {
-		max-width: 150px;
-		margin-top: 1rem;
+	.wallet-addresses ul {
+		max-height: 200px;
+		overflow-y: auto;
+		padding-left: 1rem;
 	}
 
 	@media (max-width: 600px) {
-		li {
+		.project-actions {
 			flex-direction: column;
-			align-items: flex-start;
+			align-items: stretch;
 		}
 
-		.project-actions {
-			margin-top: 1rem;
+		.btn {
+			width: 100%;
 		}
 	}
 </style>

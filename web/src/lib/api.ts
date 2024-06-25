@@ -41,7 +41,7 @@ export function createMint(token: string, projectId: string) {
 }
 
 export function fetchProjects(token: string) {
-	return fetch(`${PUBLIC_API_BASE_URL}/projects`, {
+	return fetch(`${PUBLIC_API_BASE_URL}/project`, {
 		method: 'GET',
 		headers: {
 			Authorization: `${token}`
@@ -49,12 +49,14 @@ export function fetchProjects(token: string) {
 	});
 }
 
-export function deleteProject(token: string, projectId: string) {
-	return fetch(`${PUBLIC_API_BASE_URL}/projects/${projectId}`, {
-		method: 'DELETE',
+export function setProjectClaimOpen(token: string, projectId: string, claimOpen: boolean) {
+	return fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}/claimOpen`, {
+		method: 'PATCH',
 		headers: {
+			'Content-Type': 'application/json',
 			Authorization: `${token}`
-		}
+		},
+		body: JSON.stringify({ claimOpen })
 	});
 }
 
@@ -68,7 +70,7 @@ export function createProject(
 		nftLink: string;
 	}
 ) {
-	return fetch(`${PUBLIC_API_BASE_URL}/projects`, {
+	return fetch(`${PUBLIC_API_BASE_URL}/project`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
