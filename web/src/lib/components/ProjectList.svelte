@@ -109,10 +109,10 @@
 			return project;
 		});
 		let airdropped = confirm(
-			'Wallet addresses copied to clipboard! Confirm to let these users know you started the airdrop. Cancel if you are not ready to start the airdrop.'
+			'Wallet addresses copied to clipboard! Confirm to let these users know you started the airdrop. Cancel if you are not ready to start the airdrop.\n\nTo airdrop the NFTs, go to your NFT page on Zora, select Manage settings -> Airdrop -> Paste the addresses in the text box and click Airdrop.'
 		);
 		airdropped = confirm(
-			'Confirming means you already did the airdrop. Please cancel if you did not. You cannot copy these addresses again if you confirm.'
+			'Confirming means you already did the airdrop on Zora. Please cancel if you did not. You cannot copy these addresses again if you confirm.'
 		);
 		if (airdropped) {
 			/* const token = await currentUser.getIdToken(true);
@@ -232,8 +232,7 @@
 	}
 
 	h2,
-	h3,
-	h4 {
+	h3 {
 		color: var(--accent-color);
 	}
 
@@ -335,7 +334,7 @@
 		align-items: center;
 	}
 
-	.wallet-addresses {
+	/* 	.wallet-addresses {
 		margin-top: 1.5rem;
 		background: rgba(255, 255, 255, 0.05);
 		padding: 1rem;
@@ -346,7 +345,7 @@
 		max-height: 200px;
 		overflow-y: auto;
 		padding-left: 1rem;
-	}
+	} */
 
 	@media (max-width: 600px) {
 		.project-actions {
