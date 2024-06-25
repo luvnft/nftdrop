@@ -1,6 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { PUBLIC_API_BASE_URL } from '$env/static/public';
+	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 
 	/**
@@ -12,7 +12,7 @@
 	 * @type {any[]}
 	 */
 	let projects = [];
-	let newProjectName = '';
+	let newProjectTitle = '';
 	let newProjectFrom = '';
 	let newProjectNftLink = '';
 	let newProjectImage = '';
@@ -27,12 +27,7 @@
 
 	async function fetchProjects() {
 		const token = await currentUser.getIdToken(true);
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/projects`, {
-			method: 'GET',
-			headers: {
-				Authorization: `${token}`
-			}
-		});
+		const res = await api.fetchProjects(token);
 		if (res.status === 200) {
 			projects = await res.json();
 		}
@@ -41,18 +36,17 @@
 	async function createProject() {
 		isCreatingProject = true;
 		const token = await currentUser.getIdToken(true);
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/projects`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `${token}`
-			},
-			body: JSON.stringify({ name: newProjectName, description: newProjectDescription })
+		const res = await api.createProject(token, {
+			title: newProjectTitle,
+			from: newProjectFrom,
+			nftLink: newProjectNftLink,
+			image: newProjectImage,
+			description: newProjectDescription
 		});
 		if (res.status === 200) {
 			const newProject = await res.json();
 			projects = [...projects, newProject];
-			newProjectName = '';
+			newProjectTitle = '';
 			newProjectFrom = '';
 			newProjectNftLink = '';
 			newProjectImage = '';
@@ -67,12 +61,7 @@
 	async function deleteProject(projectId) {
 		if (confirm('Are you sure you want to delete this project?')) {
 			const token = await currentUser.getIdToken(true);
-			const res = await fetch(`${PUBLIC_API_BASE_URL}/projects/${projectId}`, {
-				method: 'DELETE',
-				headers: {
-					Authorization: `${token}`
-				}
-			});
+			const res = await api.deleteProject(token, projectId);
 			if (res.status === 200) {
 				projects = projects.filter((project) => project.id !== projectId);
 			}
@@ -89,7 +78,7 @@
 
 	<div class="create-project">
 		<h3>Create New Project</h3>
-		<input type="text" bind:value={newProjectName} placeholder="NFT Title" />
+		<input type="text" bind:value={newProjectTitle} placeholder="NFT Title" />
 		<input type="text" bind:value={newProjectFrom} placeholder="Airdrop from (your signature)" />
 		<input type="text" bind:value={newProjectNftLink} placeholder="Link to NFT on Zora" />
 		<input

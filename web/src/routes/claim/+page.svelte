@@ -10,6 +10,7 @@
 	import MintButton from '$lib/components/MintButton.svelte';
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import SidePanel from '$lib/components/SidePanel.svelte';
+	import { createMint } from '$lib/api';
 
 	let authInitialised = false;
 	/**
@@ -106,14 +107,7 @@
 			isMinting = false;
 			return;
 		}
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/mint`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `${token}`
-			},
-			body: JSON.stringify({ projectId })
-		});
+		const res = await createMint(token, projectId);
 		const body = await res.json();
 
 		project.mintCount = body.mintCount;

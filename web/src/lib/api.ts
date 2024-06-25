@@ -11,11 +11,69 @@ export function setUserWallet(token: string, walletAddress: string) {
 	});
 }
 
-export function getUserData(token: string) {
+export function fetchUserData(token: string) {
 	return fetch(`${PUBLIC_API_BASE_URL}/user`, {
 		method: 'GET',
 		headers: {
 			Authorization: `${token}`
 		}
+	});
+}
+
+export function fetchMints(token: string) {
+	return fetch(`${PUBLIC_API_BASE_URL}/mint`, {
+		method: 'GET',
+		headers: {
+			Authorization: `${token}`
+		}
+	});
+}
+
+export function createMint(token: string, projectId: string) {
+	return fetch(`${PUBLIC_API_BASE_URL}/mint`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `${token}`
+		},
+		body: JSON.stringify({ projectId })
+	});
+}
+
+export function fetchProjects(token: string) {
+	return fetch(`${PUBLIC_API_BASE_URL}/projects`, {
+		method: 'GET',
+		headers: {
+			Authorization: `${token}`
+		}
+	});
+}
+
+export function deleteProject(token: string, projectId: string) {
+	return fetch(`${PUBLIC_API_BASE_URL}/projects/${projectId}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `${token}`
+		}
+	});
+}
+
+export function createProject(
+	token: string,
+	project: {
+		title: string;
+		from: string;
+		description: string;
+		image: string;
+		nftLink: string;
+	}
+) {
+	return fetch(`${PUBLIC_API_BASE_URL}/projects`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `${token}`
+		},
+		body: JSON.stringify(project)
 	});
 }

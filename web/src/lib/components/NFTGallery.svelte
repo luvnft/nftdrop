@@ -1,7 +1,7 @@
 <script>
-	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { onMount } from 'svelte';
 	import Loader from './Loader.svelte';
+	import { fetchMints } from '$lib/api';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -32,12 +32,7 @@
 		}
 
 		isLoading = true;
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/mints`, {
-			method: 'GET',
-			headers: {
-				Authorization: `${token}`
-			}
-		});
+		const res = await fetchMints(token);
 		if (res.status === 200) {
 			nfts = await res.json();
 		}
