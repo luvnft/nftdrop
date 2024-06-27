@@ -3,6 +3,7 @@
 	import Loader from './Loader.svelte';
 	import { fetchMints } from '$lib/api';
 	import { PUBLIC_BASE_BLOCKSCOUT_URL } from '$env/static/public';
+	import { getZoraCollectUrl } from '$lib';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -26,7 +27,7 @@
 			console.error('No user found');
 			return;
 		}
-		const token = await currentUser.getIdToken(true);
+		const token = await currentUser.getIdToken();
 		if (!token) {
 			console.error('No token found for user', currentUser);
 			return;
@@ -89,8 +90,13 @@
 					<div class="nft-info">
 						<h3>{nft.title}</h3>
 						<p>{nft.description}</p>
-						{#if nft.nftLink}
-							<a href={nft.nftLink} target="_blank" rel="noopener noreferrer" class="view-on-zora">
+						{#if nft.nftContractAddress && nft.tokenId}
+							<a
+								href={getZoraCollectUrl(nft.nftContractAddress, nft.tokenId)}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="view-on-zora"
+							>
 								View on Zora
 							</a>
 						{/if}
@@ -120,7 +126,7 @@
 			{/each}
 		</div>
 	{:else}
-		<p>You haven't minted any NFTs yet.</p>
+		<p>You haven't claimed any NFTs yet.</p>
 	{/if}
 </div>
 

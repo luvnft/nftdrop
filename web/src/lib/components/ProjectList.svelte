@@ -1,5 +1,5 @@
 <script>
-	import { PUBLIC_BASE_BLOCKSCOUT_URL } from '$env/static/public';
+	import { PUBLIC_BASE_BLOCKSCOUT_URL, PUBLIC_ZORA_CO_URL } from '$env/static/public';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -15,8 +15,8 @@
 	let projects = [];
 	let newProjectTitle = 'Midsummer';
 	let newProjectFrom = 'Nordic Traditions Collective';
-	let newProjectNftLink =
-		'https://zora.co/collect/base:0xa89473261cc82b9044b6a1442fdb840ad3146cdf/1?referrer=0x9477f1031d1b2Ec181E8c3121e523877c7460C92';
+	let newProjectERC1155 = '0xa89473261cc82b9044b6a1442fdb840ad3146cdf';
+	let newProjectTokenId = '1';
 	let newProjectImage =
 		'https://remote-image.decentralized-content.com/image?url=https%3A%2F%2Fmagic.decentralized-content.com%2Fipfs%2Fbafybeie3yltt77fmf6v6vmzspkdv4hkh6sn6mj62k7nwjbqvpmpo5a26bq&w=1920&q=75';
 	let newProjectDescription = 'Capture the enchantment of Midsummer with this mystical NFT.';
@@ -28,6 +28,8 @@
 	// let newProjectDescription = '';
 	let isCreatingProject = false;
 	let showCreateForm = false;
+	let recordAirdropInProgress = false;
+	let updatingAirdropStatusOnChain = false;
 
 	onMount(() => {
 		if (currentUser) {
@@ -36,7 +38,7 @@
 	});
 
 	async function fetchProjects() {
-		const token = await currentUser.getIdToken(true);
+		const token = await currentUser.getIdToken();
 		const res = await api.fetchProjects(token);
 		if (res.status === 200) {
 			projects = await res.json();
@@ -45,11 +47,12 @@
 
 	async function createProject() {
 		isCreatingProject = true;
-		const token = await currentUser.getIdToken(true);
+		const token = await currentUser.getIdToken();
 		const res = await api.createProject(token, {
 			title: newProjectTitle,
 			from: newProjectFrom,
-			nftLink: newProjectNftLink,
+			nftContractAddress: newProjectERC1155,
+			tokenId: newProjectTokenId,
 			image: newProjectImage,
 			description: newProjectDescription
 		});
@@ -64,7 +67,8 @@
 	function resetForm() {
 		newProjectTitle = '';
 		newProjectFrom = '';
-		newProjectNftLink = '';
+		newProjectERC1155 = '';
+		newProjectTokenId = '';
 		newProjectImage = '';
 		newProjectDescription = '';
 		showCreateForm = false;
@@ -101,6 +105,7 @@
 				'This airdrop project must be added to the blockchain to allow claiming. All airdrop claims will be recorded as they come in. This incurs a small gas fee which will be covered by us. Continue?'
 			)
 		) {
+			recordAirdropInProgress = true;
 			const token = await currentUser.getIdToken();
 			const res = await api.recordProjectOnChain(token, projectId);
 			if (res.status === 200) {
@@ -112,11 +117,12 @@
 					return project;
 				});
 			}
+			recordAirdropInProgress = false;
 		}
 	}
 
 	/* async function copyWalletAddresses(projectId) {
-		const token = await currentUser.getIdToken(true);
+		const token = await currentUser.getIdToken();
 		const res = await api.getProjectWalletAddresses(token, projectId);
 		if (res.status === 200) {
 			const addresses = await res.json();
@@ -125,43 +131,100 @@
 		}
 	} */
 	/**
-	 * @param {string} projectId
+	 * @param {any} project
 	 */
-	async function copyWalletAddresses(projectId) {
-		const addresses = [
+	async function copyWalletAddresses(project) {
+		/* const addresses = [
 			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92',
 			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92',
 			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92'
 		];
-		navigator.clipboard.writeText(addresses.join('\n'));
-		projects = projects.map((project) => {
-			if (project.id === projectId) {
-				return { ...project, walletAddresses: addresses };
-			}
-			return project;
-		});
-		let airdropped = confirm(
-			'Wallet addresses copied to clipboard! Confirm to let these users know you started the airdrop. Cancel if you are not ready to start the airdrop.\n\nTo airdrop the NFTs, go to your NFT page on Zora, select Manage settings -> Airdrop -> Paste the addresses in the text box and click Airdrop.'
-		);
-		airdropped = confirm(
-			'Confirming means you already did the airdrop on Zora. Please cancel if you did not. You cannot copy these addresses again if you confirm and we will record these NFT claims as airdropped on Base.'
-		);
-		if (airdropped) {
-			/* const token = await currentUser.getIdToken(true);
-			const res = await api.airdropNFT(token, projectId, addresses);
+		 */
+
+		let shouldUpdateOnChain =
+			project.lastUpdatedOnChainAt && project.lastUpdatedOnChainAt < project.latestClaimAt;
+
+		/**
+		 * @type {string[]}
+		 */
+		let addresses = [];
+
+		if (shouldUpdateOnChain) {
+			const willUpdate = confirm(
+				'New claims have been made since last update on chain. Update now? This will incur a small gas fee which will be covered by us. If you skip this, the copied addresses might contain addresses which already received the airdrop.'
+			);
+			const token = await currentUser.getIdToken();
+			if (willUpdate) updatingAirdropStatusOnChain = true;
+			const res = await api.fetchProjectAirdropStatus(token, project.id, willUpdate);
 			if (res.status === 200) {
-				alert('Airdrop started!');
-			} */
+				const { mintCount, waitingForAirdropCount, lastUpdatedOnChainAt, eligibleAddresses } =
+					await res.json();
+				addresses = eligibleAddresses;
+				projects = projects.map((project) => {
+					if (project.id === project.id) {
+						return { ...project, mintCount, waitingForAirdropCount, lastUpdatedOnChainAt };
+					}
+					return project;
+				});
+			}
+			if (willUpdate) updatingAirdropStatusOnChain = false;
+		} else {
+			const token = await currentUser.getIdToken();
+			const res = await api.fetchProjectAirdropStatus(token, project.id, false);
+			if (res.status === 200) {
+				const { mintCount, waitingForAirdropCount, lastUpdatedOnChainAt, eligibleAddresses } =
+					await res.json();
+				addresses = eligibleAddresses;
+				projects = projects.map((project) => {
+					if (project.id === project.id) {
+						return { ...project, mintCount, waitingForAirdropCount, lastUpdatedOnChainAt };
+					}
+					return project;
+				});
+			}
 		}
+
+		if (addresses.length === 0) {
+			alert('No addresses to copy!');
+			return;
+		}
+
+		console.log('got addresses', addresses.length, addresses, addresses.join('\n'));
+
+		navigator.clipboard.writeText(addresses.join('\n'));
+
+		alert(
+			addresses.length > 1
+				? `${addresses.length} wallet addresses copied to clipboard`
+				: 'Wallet address copied to clipboard' +
+						'\n\nTo airdrop the NFTs: Go to your NFT page on Zora -> Select Manage settings -> Airdrop -> Paste the addresses in the text box -> Click Airdrop. Please double check that the contract address and token ID match with this project before airdropping. Otherwise we cannot track the airdrops on Base.\n\nAfter airdropping, come back here and click the refresh button to update the airdrop status on chain.'
+		);
 	}
 
 	/**
-	 * @param {{ showAddresses: boolean; }} project
+	 * @param {string} projectId
 	 */
-	/* function toggleShowAddresses(project) {
-		project.showAddresses = !project.showAddresses;
-		projects = [...projects];
-	} */
+	async function updateAirdropStatusOnChain(projectId) {
+		const willUpdate = confirm(
+			'Check for landed airdrops and update the airdrop status on chain. This will incur a small gas fee which will be covered by us. Please do not do this unless you have airdropped NFTs on Zora already. Continue?'
+		);
+		if (!willUpdate) {
+			return;
+		}
+		updatingAirdropStatusOnChain = true;
+		const token = await currentUser.getIdToken();
+		const res = await api.fetchProjectAirdropStatus(token, projectId, true);
+		if (res.status === 200) {
+			const { mintCount, waitingForAirdropCount, lastUpdatedOnChainAt } = await res.json();
+			projects = projects.map((project) => {
+				if (project.id === projectId) {
+					return { ...project, mintCount, waitingForAirdropCount, lastUpdatedOnChainAt };
+				}
+				return project;
+			});
+		}
+		updatingAirdropStatusOnChain = false;
+	}
 
 	$: if (currentUser) {
 		fetchProjects();
@@ -205,7 +268,16 @@
 					bind:value={newProjectFrom}
 					placeholder="Airdrop from (your signature)"
 				/>
-				<input type="text" bind:value={newProjectNftLink} placeholder="Link to NFT on Zora" />
+				<input
+					type="text"
+					bind:value={newProjectERC1155}
+					placeholder="Collection of the NFT on Zora (ERC-1155 Address)"
+				/>
+				<input
+					type="text"
+					bind:value={newProjectTokenId}
+					placeholder="Edition number of the NFT on Zora (ERC-1155 Token ID)"
+				/>
 				<input
 					type="text"
 					bind:value={newProjectImage}
@@ -226,6 +298,7 @@
 		<ul>
 			{#each projects as project (project.id)}
 				<li>
+					<img src={project.image} alt={project.title} class="project-image" />
 					<div class="project-info">
 						<h3>{project.title}</h3>
 						<p>{project.description}</p>
@@ -239,12 +312,36 @@
 						{/if}
 
 						{#if project.mintCount > 0}
-							<p class="claim-status">Claims: {project.mintCount}</p>
+							<p class="claim-status">Total claims: {project.mintCount}</p>
+							<p class="claim-status">
+								Claims waiting for airdrop: {project.waitingForAirdropCount ?? project.mintCount}
+								{project.lastUpdatedOnChainAt
+									? `(Last
+									checked on ${project.lastUpdatedOnChainAt}`
+									: ''}
+
+								{#if project.existsOnChain}
+									<button
+										title="Check for landed claims and update the airdrop status on chain. This will incur a small gas fee which will be covered by us."
+										on:click={() => updateAirdropStatusOnChain(project.id)}
+										class="btn btn-refresh"
+										disabled={updatingAirdropStatusOnChain ||
+											(project.lastUpdatedOnChainAt &&
+												project.lastUpdatedOnChainAt < project.latestClaimAt)}>⟳</button
+									>
+								{/if}
+							</p>
+
+							{#if project.existsOnChain}
+								<button on:click={() => copyWalletAddresses(project)} class="btn btn-secondary">
+									Copy Wallet Addresses Waiting for Airdrop
+								</button>
+							{/if}
 						{/if}
 						<p class="claim-status">
 							{project.existsOnChain
-								? 'Airdrop project has been recorded on Base'
-								: 'Airdrop project has not been recorded on Base yet. Record Airdrop on Base before allowing claim.'}
+								? 'This airdrop project has been recorded on Base'
+								: 'This airdrop project has not been recorded on Base yet. You have to record the project on Base before allowing claim is possible.'}
 							{#if project.txHash}
 								<br />
 								<a
@@ -255,42 +352,33 @@
 								>
 							{/if}
 						</p>
-					</div>
-					<div class="project-actions">
-						<a href="/claim/?id={project.id}" class="btn btn-primary">View Claim Page</a>
-						<a href="/qr/?id={project.id}" class="btn btn-secondary">Get QR Code</a>
-						<button
-							on:click={() => setProjectClaimOpen(project.id, !project.claimOpen)}
-							class="btn btn-tertiary"
-							disabled={!project.existsOnChain}
-						>
-							{project.claimOpen ? 'Disable claim' : 'Allow claim'}
-						</button>
-						{#if !project.existsOnChain}
-							<button on:click={() => recordAirdropOnChain(project.id)} class="btn btn-tertiary">
-								Record Airdrop on Base
+						<div class="project-actions">
+							<a href="/claim/?id={project.id}" class="btn btn-primary">View Claim Page</a>
+							<a href="/qr/?id={project.id}" class="btn btn-secondary">Get QR Code</a>
+							<a
+								href="{PUBLIC_ZORA_CO_URL}/manage/1155/base:{project.nftContractAddress}/{project.tokenId}/airdrop"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-secondary">Airdrop on Zora.co</a
+							>
+							<button
+								on:click={() => setProjectClaimOpen(project.id, !project.claimOpen)}
+								class="btn btn-tertiary"
+								disabled={!project.existsOnChain}
+							>
+								{project.claimOpen ? 'Disable claim' : 'Allow claim'}
 							</button>
-						{/if}
-
-						{#if project.mintCount > 0}
-							<button on:click={() => copyWalletAddresses(project.id)} class="btn btn-secondary">
-								Start Airdrop
-							</button>
-						{/if}
-						<!-- <button on:click={() => toggleShowAddresses(project)} class="btn btn-secondary">
-							{project.showAddresses ? 'Hide Addresses' : 'Show Addresses'}
-						</button> -->
-					</div>
-					<!-- {#if project.showAddresses}
-						<div class="wallet-addresses" transition:fade>
-							<h4>Wallet Addresses:</h4>
-							<ul>
-								{#each project.walletAddresses || [] as address}
-									<li>{address}</li>
-								{/each}
-							</ul>
+							{#if !project.existsOnChain}
+								<button
+									disabled={recordAirdropInProgress}
+									on:click={() => recordAirdropOnChain(project.id)}
+									class="btn btn-tertiary"
+								>
+									Record Airdrop on Base
+								</button>
+							{/if}
 						</div>
-					{/if} -->
+					</div>
 				</li>
 			{/each}
 		</ul>
@@ -316,6 +404,12 @@
 		padding: 1rem 3rem 1rem 2rem;
 		border-radius: 15px;
 		margin-bottom: 2rem;
+	}
+
+	.project-image {
+		width: 100%;
+		height: 200px;
+		object-fit: cover;
 	}
 
 	input,
@@ -346,6 +440,11 @@
 		text-decoration: none;
 		display: inline-block;
 		text-align: center;
+	}
+
+	.btn-refresh {
+		border-radius: 15%;
+		font-size: 1.25rem;
 	}
 
 	.btn-primary {
@@ -387,13 +486,14 @@
 	li {
 		background: rgba(255, 255, 255, 0.1);
 		backdrop-filter: blur(6px);
-		padding: 2rem;
 		border-radius: 15px;
 		margin-bottom: 1.5rem;
+		overflow: hidden;
 	}
 
 	.project-info {
 		margin-bottom: 1.5rem;
+		padding: 2rem;
 	}
 
 	.claim-status {
@@ -407,19 +507,6 @@
 		gap: 1rem;
 		align-items: center;
 	}
-
-	/* 	.wallet-addresses {
-		margin-top: 1.5rem;
-		background: rgba(255, 255, 255, 0.05);
-		padding: 1rem;
-		border-radius: 8px;
-	}
-
-	.wallet-addresses ul {
-		max-height: 200px;
-		overflow-y: auto;
-		padding-left: 1rem;
-	} */
 
 	@media (max-width: 600px) {
 		.project-actions {

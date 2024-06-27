@@ -1,15 +1,22 @@
 import { Request, Response } from "express";
 import * as projectService from "../services/projectService";
-import { doesProjectExistOnChain } from "../blockchain/base";
 
 export async function createProject(req: Request, res: Response) {
   if (!req.user) {
     return res.status(401).send("Unauthorized");
   }
 
-  const { title, from, description, image, nftLink } = req.body;
+  const { title, from, description, image, nftContractAddress, tokenId } =
+    req.body;
 
-  if (!title || !from || !description || !image || !nftLink) {
+  if (
+    !title ||
+    !from ||
+    !description ||
+    !image ||
+    !nftContractAddress ||
+    !tokenId
+  ) {
     return res.status(400).send("Missing required fields");
   }
 
@@ -18,7 +25,8 @@ export async function createProject(req: Request, res: Response) {
     from,
     description,
     image,
-    nftLink,
+    nftContractAddress,
+    tokenId,
     uid: req.user.uid,
     claimOpen: false,
   });
@@ -48,6 +56,27 @@ export async function getProject(req: Request, res: Response) {
   }
 
   const project = await projectService.getProjectInfo(projectId);
+
+  if (!project) {
+    return res.status(404).send("Project not found");
+  }
+
+  res.send(project);
+}
+
+export async function getAirdropStatus(req: Request, res: Response) {
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required");
+  }
+
+  const { updateOnChain } = req.query;
+
+  const project = await projectService.getAirdropStatus(
+    projectId,
+    updateOnChain === "true"
+  );
 
   if (!project) {
     return res.status(404).send("Project not found");

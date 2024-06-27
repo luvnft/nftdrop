@@ -3,11 +3,12 @@
 	import { cubicOut } from 'svelte/easing';
 	import EthereumWalletInput from './EthereumWalletInput.svelte';
 	import { formatTimestamp } from '$lib';
+	import { PUBLIC_BASE_BLOCKSCOUT_URL } from '$env/static/public';
 
 	export let mint;
 	export let isMinting;
 	export let mintingComplete;
-	export let mintedAt;
+	export let claimedAt;
 	export let userAlreadyMinted;
 	export let project;
 	export let primaryEthereumWallet;
@@ -47,21 +48,54 @@
 		<h3>✨ Hello again {currentUser?.displayName ?? ''}!</h3>
 		<p>
 			Only 1 NFT per user can be collected and you've already collected your NFT on {formatTimestamp(
-				mintedAt
+				claimedAt
 			)}.
+			{#if project.recordClaimTxHash}
+				<a
+					class="text-link"
+					href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${project.recordClaimTxHash}`}
+					target="_blank"
+					rel="noopener noreferrer"><i>View on Blockscout</i></a
+				>
+			{/if}
 		</p>
 		{#if !primaryEthereumWallet}
 			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
 		{:else if mint.airdroppedAt}
-			<p>We have already airdropped the NFT to your wallet {primaryEthereumWallet}</p>
+			<p>
+				We have already airdropped the NFT to your wallet {primaryEthereumWallet}
+				{#if mint.nftAirdroppedTxHash}
+					<br />
+					<p>
+						<a
+							class="text-link"
+							href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${mint.nftAirdroppedTxHash}`}
+							target="_blank"
+							rel="noopener noreferrer"><i>View airdrop on Blockscout</i></a
+						>
+					</p>
+				{/if}
+			</p>
 		{:else}
-			<p>We will soon airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
+			<p>We will airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
 		{/if}
 	</div>
 {:else}
 	<div class="minting-complete">
 		<h3>🎉 Congratulations!</h3>
-		<p>You've successfully collected the NFT #{project.mintCount}.</p>
+		<p>
+			You've successfully claimed the NFT #{project.mintCount}.
+			{#if project.recordClaimTxHash}
+				<br />
+				<a
+					class="text-link"
+					href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${project.recordClaimTxHash}`}
+					target="_blank"
+					rel="noopener noreferrer"><i>View on Blockscout</i></a
+				>
+			{/if}
+		</p>
+
 		{#if !primaryEthereumWallet}
 			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
 		{:else}

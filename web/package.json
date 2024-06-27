@@ -40,6 +40,10 @@
 	"type": "module",
 	"dependencies": {
 		"@firebase/auth": "^1.7.4",
-		"gsap": "^3.12.5"
+		"@wagmi/connectors": "^5.0.19",
+		"@wagmi/core": "^2.11.5",
+		"gsap": "^3.12.5",
+		"svelte-wagmi": "^1.0.7",
+		"viem": "^2.16.3"
 	}
 }

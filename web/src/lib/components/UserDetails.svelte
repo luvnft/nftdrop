@@ -11,7 +11,7 @@
 	let isEditingWallet = false;
 
 	async function fetchUserDetails() {
-		const token = await currentUser.getIdToken(true);
+		const token = await currentUser.getIdToken();
 		const res = await fetch(`${PUBLIC_API_BASE_URL}/user`, {
 			method: 'GET',
 			headers: {

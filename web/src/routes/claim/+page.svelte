@@ -28,7 +28,7 @@
 	/**
 	 * @type {any}
 	 */
-	let mintedAt = undefined;
+	let claimedAt = undefined;
 	let primaryEthereumWallet = '';
 	let userAlreadyMinted = false;
 
@@ -42,7 +42,7 @@
 				return;
 			}
 
-			const token = await user.getIdToken(true);
+			const token = await user.getIdToken();
 			const res = await fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}/canMint`, {
 				method: 'GET',
 				headers: {
@@ -52,7 +52,7 @@
 			if (res.status === 200) {
 				const body = await res.json();
 				userAlreadyMinted = body.userAlreadyMinted;
-				mintedAt = body.mintedAt;
+				claimedAt = body.claimedAt;
 				primaryEthereumWallet = body.primaryEthereumWallet;
 			} else {
 				console.error('Error fetching minting status', res);
@@ -100,7 +100,7 @@
 			return;
 		}
 		isMinting = true;
-		const token = await currentUser.getIdToken(true);
+		const token = await currentUser.getIdToken();
 		if (!token) {
 			console.error('No token found for user', currentUser);
 			isMinting = false;
@@ -120,7 +120,7 @@
 
 		project.mintCount = body.mintCount;
 		primaryEthereumWallet = body.mint?.walletAddress;
-		mintedAt = body.mintedAt;
+		claimedAt = body.claimedAt;
 
 		isMinting = false;
 		mintingComplete = true;
@@ -164,7 +164,7 @@
 				{mint}
 				{isMinting}
 				{mintingComplete}
-				{mintedAt}
+				{claimedAt}
 				{userAlreadyMinted}
 				{project}
 				{currentUser}

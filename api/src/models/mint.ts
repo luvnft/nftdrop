@@ -9,7 +9,8 @@ export interface Mint {
   title: string;
   description: string;
   image: string;
-  nftLink: string;
+  nftContractAddress: string;
+  tokenId: string;
   timestamp: Timestamp;
   walletAddress: string | null;
   airdroppedAt: Timestamp | null;

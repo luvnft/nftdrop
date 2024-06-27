@@ -35,7 +35,7 @@
 		successMessage = '';
 
 		try {
-			const token = await auth.currentUser?.getIdToken(true);
+			const token = await auth.currentUser?.getIdToken();
 
 			if (!token) {
 				throw new Error('Failed to get user token');

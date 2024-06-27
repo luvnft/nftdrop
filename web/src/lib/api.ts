@@ -49,6 +49,22 @@ export function fetchProjects(token: string) {
 	});
 }
 
+export function fetchProjectAirdropStatus(
+	token: string,
+	projectId: string,
+	updateOnChain: boolean
+) {
+	return fetch(
+		`${PUBLIC_API_BASE_URL}/project/${projectId}/airdropStatus${updateOnChain ? '?updateOnChain=true' : ''}`,
+		{
+			method: 'GET',
+			headers: {
+				Authorization: `${token}`
+			}
+		}
+	);
+}
+
 export function recordProjectOnChain(token: string, projectId: string) {
 	return fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}/recordOnChain`, {
 		method: 'POST',
@@ -76,7 +92,8 @@ export function createProject(
 		from: string;
 		description: string;
 		image: string;
-		nftLink: string;
+		nftContractAddress: string;
+		tokenId: string;
 	}
 ) {
 	return fetch(`${PUBLIC_API_BASE_URL}/project`, {

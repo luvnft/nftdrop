@@ -6,13 +6,18 @@ import {
   addProject,
   updateProjectClaimOpen,
   updateProjectOnchain,
+  updateProject,
 } from "../models/project";
 import { getUserMint } from "../models/mint";
 import { getUserData } from "../models/user";
 import {
   recordProjectOnChain,
   doesProjectExistOnChain,
+  getEligibleUsersForAirdrop,
+  updateEligibleUsersForAirdrop,
 } from "../blockchain/base";
+import logger from "../utils/logger";
+import e from "express";
 
 export async function createProject(project: Project): Promise<Project> {
   return await addProject(project);
@@ -51,13 +56,61 @@ export async function canUserMint(projectId: string, uid: string) {
 
   return {
     userAlreadyMinted: true,
-    mintedAt: userMint.timestamp.toDate().toISOString(),
+    claimedAt: userMint.timestamp.toDate().toISOString(),
     primaryEthereumWallet: userData.primaryEthereumWallet,
   };
 }
 
+export async function getAirdropStatus(
+  projectId: string,
+  updateOnChain: boolean
+) {
+  const project = await getProject(projectId);
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (updateOnChain) {
+    const projectExistsOnChain = await doesProjectExistOnChain(projectId);
+    if (!projectExistsOnChain) {
+      logger.error("Project does not exist on chain", projectId, project);
+      throw new Error("Project does not exist on chain");
+    }
+    const txResult = await updateEligibleUsersForAirdrop(projectId);
+    if (!txResult.success) {
+      logger.error(
+        "Failed to update eligible users for airdrop on chain",
+        txResult
+      );
+      throw new Error("Failed to update eligible users for airdrop on chain");
+    }
+    await updateProject(projectId, { lastUpdatedOnChainAt: new Date() });
+  }
+
+  const eligibleAddresses = await getEligibleUsersForAirdrop(projectId);
+
+  logger.info(eligibleAddresses);
+
+  return { ...project, eligibleAddresses };
+}
+
 export async function createProjectOnChain(projectId: string) {
-  const transactionResult = await recordProjectOnChain(projectId);
+  const project = await getProject(projectId);
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  const { nftContractAddress, tokenId } = project;
+
+  if (!nftContractAddress || !tokenId) {
+    throw new Error("Project is missing required fields");
+  }
+
+  const transactionResult = await recordProjectOnChain(
+    projectId,
+    nftContractAddress,
+    tokenId
+  );
   if (!transactionResult.success) {
     throw new Error("Failed to record project on blockchain");
   }

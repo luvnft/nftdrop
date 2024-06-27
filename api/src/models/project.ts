@@ -6,12 +6,15 @@ export interface Project {
   from: string;
   description: string;
   image: string;
-  nftLink: string;
+  nftContractAddress: string;
+  tokenId: string;
   uid: string;
   claimOpen: boolean;
   mintCount?: number;
   existsOnChain?: boolean;
   txHash?: string;
+  latestClaimAt?: Date;
+  lastUpdatedOnChainAt?: Date;
 }
 
 export async function addProject(project: Project) {
@@ -63,4 +66,8 @@ export async function updateProjectMintCount(
   mintCount: number
 ) {
   await firestore.doc(`projects/${projectId}`).update({ mintCount });
+}
+
+export async function updateProject(projectId: string, data: any) {
+  await firestore.doc(`projects/${projectId}`).update(data);
 }

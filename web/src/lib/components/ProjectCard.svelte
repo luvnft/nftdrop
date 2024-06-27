@@ -1,4 +1,5 @@
 <script>
+	import { getZoraCollectUrl } from '$lib';
 	import Loader from './Loader.svelte';
 	export let project;
 </script>
@@ -9,7 +10,7 @@
 			<img src={project.image} alt={project.title} />
 			{#if project.mintCount !== undefined}
 				<div class="mint-count">
-					<span>{project.mintCount}</span> minted
+					<span>{project.mintCount}</span> claimed
 				</div>
 			{/if}
 		</div>
@@ -17,9 +18,12 @@
 			<h2 class="gradient-text">{project.title}</h2>
 			<p class="from">{project.from}</p>
 			<p class="description">{project.description}</p>
-			{#if project.nftLink}
-				<a href={project.nftLink} target="_blank" rel="noopener noreferrer" class="nft-link"
-					>View on Zora</a
+			{#if project.nftContractAddress && project.tokenId}
+				<a
+					href={getZoraCollectUrl(project.nftContractAddress, project.tokenId)}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="nft-link">View on Zora</a
 				>
 			{/if}
 		</div>

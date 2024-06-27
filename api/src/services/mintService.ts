@@ -5,7 +5,7 @@ import {
   getUserMints,
   Mint,
 } from "../models/mint";
-import { getProject } from "../models/project";
+import { getProject, updateProject } from "../models/project";
 import { getUserData } from "../models/user";
 import { updateMintCount } from "./projectService";
 import {
@@ -43,6 +43,8 @@ export async function mintNFT(
     throw new Error("Failed to record claim on blockchain");
   }
 
+  await updateProject(projectId, { latestClaimAt: new Date() });
+
   const mintData: Mint = {
     projectId,
     uid,
@@ -50,7 +52,8 @@ export async function mintNFT(
     title: project.title,
     description: project.description,
     image: project.image,
-    nftLink: project.nftLink,
+    nftContractAddress: project.nftContractAddress,
+    tokenId: project.tokenId,
     timestamp: Timestamp.fromDate(new Date()),
     walletAddress: userData.primaryEthereumWallet ?? null,
     airdroppedAt: null,

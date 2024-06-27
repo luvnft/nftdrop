@@ -10,6 +10,7 @@ async function startServer() {
   try {
     app.listen(port, () => {
       logger.info(`Server is running on port ${port}`);
+      logger.info("Using BASE_RPC_URL: " + process.env.BASE_RPC_URL);
     });
   } catch (e) {
     logger.error("Error starting server", e);

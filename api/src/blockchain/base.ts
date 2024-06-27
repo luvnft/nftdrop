@@ -74,10 +74,14 @@ export async function doesProjectExistOnChain(
     throw error;
   }
 }
-export async function recordProjectOnChain(projectId: string) {
+export async function recordProjectOnChain(
+  projectId: string,
+  nftContractAddress: string,
+  tokenId: string
+) {
   return executeTransaction(
-    contract.createProject(projectId),
-    `Creating project ${projectId}`
+    contract.createProject(projectId, nftContractAddress, tokenId),
+    `Creating project ${projectId} ${nftContractAddress} ${tokenId} on chain`
   );
 }
 export async function recordClaimOnChain(projectId: string, userId: string) {
@@ -85,6 +89,46 @@ export async function recordClaimOnChain(projectId: string, userId: string) {
     contract.recordClaim(projectId, userId),
     `Recording claim for user ${userId} in project ${projectId}`
   );
+}
+
+/* export async function recordNftAirdroppedOnChain(
+  projectId: string,
+  userId: string
+) {
+  return executeTransaction(
+    contract.markNFTAirdropped(projectId, userId),
+    `Marking NFT airdropped for user ${userId} in project ${projectId}`
+  );
+} */
+
+export async function recordWalletAddressOnChain(
+  userId: string,
+  walletAddress: string
+) {
+  return executeTransaction(
+    contract.recordWalletAddress(userId, walletAddress),
+    `Recording wallet address ${walletAddress} for user ${userId}`
+  );
+}
+
+export async function updateEligibleUsersForAirdrop(projectId: string) {
+  const access = await contract.checkProjectAuthorization(
+    projectId,
+    signer.address
+  );
+  logger.info(`Access: ${projectId}, ${signer.address}`, access);
+
+  const nftInfo = await contract.getNFTInfo(projectId);
+  logger.info(`NFT Info: ${projectId}`, nftInfo);
+
+  return executeTransaction(
+    contract.updateEligibleUsersForAirdrop(projectId),
+    `Updating eligible users for airdrop in project ${projectId}`
+  );
+}
+
+export async function getEligibleUsersForAirdrop(projectId: string) {
+  return contract.getEligibleUsersForAirdrop(projectId);
 }
 
 export enum ClaimState {
