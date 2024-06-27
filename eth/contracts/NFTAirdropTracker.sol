@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.24;
 
 /// @title NFT Airdrop Tracking Contract
 /// @notice This contract manages NFT airdrop claims and status for multiple projects, created for the Onchain Summer Buildathon
@@ -50,6 +50,10 @@ contract NFTAirdropTracker {
 
     /// @notice Creates a new project and authorizes the contract owner for it
     function createProject(string memory _projectId) public onlyOwner {
+        require(
+            !projectAuthorizedCallers[_projectId][owner],
+            "Project already exists"
+        );
         projectAuthorizedCallers[_projectId][msg.sender] = true;
         emit ProjectCreated(_projectId);
     }
@@ -97,21 +101,9 @@ contract NFTAirdropTracker {
         return nftClaimState[_projectId][_userId];
     }
 
-    /// @notice Checks if a user has claimed an NFT in a specific project
-    /// @return bool True if the NFT has been claimed or airdropped, false if not claimed
-    function hasNFTClaimed(
-        string memory _projectId,
-        string memory _userId
+    function doesProjectExist(
+        string memory _projectId
     ) public view returns (bool) {
-        return nftClaimState[_projectId][_userId] != ClaimState.NotClaimed;
-    }
-
-    /// @notice Checks if an NFT has been airdropped to a user in a specific project
-    /// @return bool True if the NFT has been airdropped, false otherwise
-    function hasNFTAirdropped(
-        string memory _projectId,
-        string memory _userId
-    ) public view returns (bool) {
-        return nftClaimState[_projectId][_userId] == ClaimState.Airdropped;
+        return projectAuthorizedCallers[_projectId][owner];
     }
 }

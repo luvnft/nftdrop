@@ -1,4 +1,5 @@
 <script>
+	import { PUBLIC_BASE_BLOCKSCOUT_URL } from '$env/static/public';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -12,11 +13,19 @@
 	 * @type {any[]}
 	 */
 	let projects = [];
-	let newProjectTitle = '';
-	let newProjectFrom = '';
-	let newProjectNftLink = '';
-	let newProjectImage = '';
-	let newProjectDescription = '';
+	let newProjectTitle = 'Midsummer';
+	let newProjectFrom = 'Nordic Traditions Collective';
+	let newProjectNftLink =
+		'https://zora.co/collect/base:0xa89473261cc82b9044b6a1442fdb840ad3146cdf/1?referrer=0x9477f1031d1b2Ec181E8c3121e523877c7460C92';
+	let newProjectImage =
+		'https://remote-image.decentralized-content.com/image?url=https%3A%2F%2Fmagic.decentralized-content.com%2Fipfs%2Fbafybeie3yltt77fmf6v6vmzspkdv4hkh6sn6mj62k7nwjbqvpmpo5a26bq&w=1920&q=75';
+	let newProjectDescription = 'Capture the enchantment of Midsummer with this mystical NFT.';
+
+	// let newProjectTitle = '';
+	// let newProjectFrom = '';
+	// let newProjectNftLink = '';
+	// let newProjectImage = '';
+	// let newProjectDescription = '';
 	let isCreatingProject = false;
 	let showCreateForm = false;
 
@@ -70,12 +79,35 @@
 			? 'Are you sure you want to allow claiming for this project? Everyone with the QR code or the link will be able to claim the NFT.'
 			: 'Are you sure you want to disable claiming for this project?';
 		if (confirm(message)) {
-			const token = await currentUser.getIdToken(true);
+			const token = await currentUser.getIdToken();
 			const res = await api.setProjectClaimOpen(token, projectId, claimOpen);
 			if (res.status === 200) {
 				projects = projects.map((project) => {
 					if (project.id === projectId) {
 						return { ...project, claimOpen };
+					}
+					return project;
+				});
+			}
+		}
+	}
+
+	/**
+	 * @param {string} projectId
+	 */
+	async function recordAirdropOnChain(projectId) {
+		if (
+			confirm(
+				'This airdrop project must be added to the blockchain to allow claiming. All airdrop claims will be recorded as they come in. This incurs a small gas fee which will be covered by us. Continue?'
+			)
+		) {
+			const token = await currentUser.getIdToken();
+			const res = await api.recordProjectOnChain(token, projectId);
+			if (res.status === 200) {
+				const { txHash } = await res.json();
+				projects = projects.map((project) => {
+					if (project.id === projectId) {
+						return { ...project, existsOnChain: true, txHash };
 					}
 					return project;
 				});
@@ -112,7 +144,7 @@
 			'Wallet addresses copied to clipboard! Confirm to let these users know you started the airdrop. Cancel if you are not ready to start the airdrop.\n\nTo airdrop the NFTs, go to your NFT page on Zora, select Manage settings -> Airdrop -> Paste the addresses in the text box and click Airdrop.'
 		);
 		airdropped = confirm(
-			'Confirming means you already did the airdrop on Zora. Please cancel if you did not. You cannot copy these addresses again if you confirm.'
+			'Confirming means you already did the airdrop on Zora. Please cancel if you did not. You cannot copy these addresses again if you confirm and we will record these NFT claims as airdropped on Base.'
 		);
 		if (airdropped) {
 			/* const token = await currentUser.getIdToken(true);
@@ -142,11 +174,24 @@
 	<div class="create-project">
 		<h3>Create New Project</h3>
 		<p>
-			Before creating a project, please post a new NFT on <a
+			Before creating a project, you have to post a NFT on <a
 				href="https://zora.co/create"
 				target="_blank"
 				class="text-link">zora.co/create</a
-			>. This will incur a small gas fee.
+			>. This will incur a small gas fee. After you have created a NFT on Zora, you can create and
+			manage your airdrop here.
+		</p>
+		<p>
+			We will provide you a QR code which links to a unique claim page for your airdrop. At this
+			point, the airdrop must still be done on Zora, but it will be easy to do: just copy the
+			addresses from our site and paste them into the airdrop form on Zora. You must have created
+			the NFT on Zora to be able to airdrop.
+		</p>
+		<p>
+			The airdrop project and all claims to it will be recorded on Base and the gas fees will be
+			covered by us. Please consider donating some ETH to the developer wallet <code
+				>0x941729C01ff11b4B25bAA4037f225BF2AE115a12</code
+			>
 		</p>
 		{#if !showCreateForm}
 			<button on:click={() => (showCreateForm = true)} class="btn btn-primary">
@@ -184,25 +229,54 @@
 					<div class="project-info">
 						<h3>{project.title}</h3>
 						<p>{project.description}</p>
-						<p>Mint Count: {project.mintCount || 0}</p>
+
+						{#if project.existsOnChain}
+							<p class="claim-status">
+								{project.claimOpen
+									? 'Claiming is now open for everyone with the link'
+									: 'Claiming is closed'}
+							</p>
+						{/if}
+
+						{#if project.mintCount > 0}
+							<p class="claim-status">Claims: {project.mintCount}</p>
+						{/if}
 						<p class="claim-status">
-							{project.claimOpen
-								? 'Claiming is now open for everyone with the link'
-								: 'Claiming is closed'}
+							{project.existsOnChain
+								? 'Airdrop project has been recorded on Base'
+								: 'Airdrop project has not been recorded on Base yet. Record Airdrop on Base before allowing claim.'}
+							{#if project.txHash}
+								<br />
+								<a
+									class="text-link"
+									href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${project.txHash}`}
+									target="_blank"
+									rel="noopener noreferrer"><i>View on Blockscout</i></a
+								>
+							{/if}
 						</p>
 					</div>
 					<div class="project-actions">
 						<a href="/claim/?id={project.id}" class="btn btn-primary">View Claim Page</a>
-						<a href="/qr/?id=${project.id}" class="btn btn-secondary">Get QR Code</a>
+						<a href="/qr/?id={project.id}" class="btn btn-secondary">Get QR Code</a>
 						<button
 							on:click={() => setProjectClaimOpen(project.id, !project.claimOpen)}
 							class="btn btn-tertiary"
+							disabled={!project.existsOnChain}
 						>
 							{project.claimOpen ? 'Disable claim' : 'Allow claim'}
 						</button>
-						<button on:click={() => copyWalletAddresses(project.id)} class="btn btn-secondary">
-							Start Airdrop
-						</button>
+						{#if !project.existsOnChain}
+							<button on:click={() => recordAirdropOnChain(project.id)} class="btn btn-tertiary">
+								Record Airdrop on Base
+							</button>
+						{/if}
+
+						{#if project.mintCount > 0}
+							<button on:click={() => copyWalletAddresses(project.id)} class="btn btn-secondary">
+								Start Airdrop
+							</button>
+						{/if}
 						<!-- <button on:click={() => toggleShowAddresses(project)} class="btn btn-secondary">
 							{project.showAddresses ? 'Hide Addresses' : 'Show Addresses'}
 						</button> -->

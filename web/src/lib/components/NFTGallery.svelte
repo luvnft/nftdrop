@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import Loader from './Loader.svelte';
 	import { fetchMints } from '$lib/api';
+	import { PUBLIC_BASE_BLOCKSCOUT_URL } from '$env/static/public';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -40,21 +41,36 @@
 	}
 
 	/**
-	 * @param {{ walletAddress: any; airdroppedAt: string | number | Date; }} nft
+	 * @param {{ walletAddress: any; baseClaimState: number, airdroppedAt: string | number | Date; }} nft
 	 */
 	function getMintStatus(nft) {
-		if (!nft.walletAddress) {
-			return {
-				status: 'Waiting for you to add your wallet address on your Profile',
-				class: 'status-unknown'
-			};
-		} else if (nft.airdroppedAt) {
-			return {
-				status: `Airdropped to ${nft.walletAddress} at ${new Date(nft.airdroppedAt).toLocaleString()}`,
-				class: 'status-airdropped'
-			};
-		} else {
-			return { status: `Waiting for airdrop to ${nft.walletAddress}`, class: 'status-waiting' };
+		switch (nft.baseClaimState) {
+			case 0:
+				return {
+					status: `Not claimed`,
+					class: 'status-unknown'
+				};
+			case 1:
+				if (!nft.walletAddress) {
+					return {
+						status: 'Waiting for you to add your wallet address on your Profile',
+						class: 'status-unknown'
+					};
+				}
+				return {
+					status: `Waiting for airdrop to ${nft.walletAddress}`,
+					class: 'status-waiting'
+				};
+			case 2:
+				return {
+					status: `Airdropped to ${nft.walletAddress} at ${new Date(nft.airdroppedAt).toLocaleString()}`,
+					class: 'status-airdropped'
+				};
+			default:
+				return {
+					status: 'Unknown mint status',
+					class: 'status-unknown'
+				};
 		}
 	}
 </script>
@@ -79,6 +95,26 @@
 							</a>
 						{/if}
 						<p class={`mint-status ${status.class}`}>{status.status}</p>
+						{#if nft.recordClaimTxHash}
+							<p>
+								<a
+									class="text-link"
+									href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${nft.recordClaimTxHash}`}
+									target="_blank"
+									rel="noopener noreferrer"><i>View claim on Blockscout</i></a
+								>
+							</p>
+						{/if}
+						{#if nft.nftAirdroppedTxHash}
+							<p>
+								<a
+									class="text-link"
+									href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${nft.nftAirdroppedTxHash}`}
+									target="_blank"
+									rel="noopener noreferrer"><i>View airdrop on Blockscout</i></a
+								>
+							</p>
+						{/if}
 					</div>
 				</div>
 			{/each}

@@ -1,5 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { firestore } from "../config/firebase";
+import { ClaimState, getClaimState } from "../blockchain/base";
 
 export interface Mint {
   projectId: string;
@@ -12,6 +13,9 @@ export interface Mint {
   timestamp: Timestamp;
   walletAddress: string | null;
   airdroppedAt: Timestamp | null;
+  baseClaimState: ClaimState;
+  recordClaimTxHash: string;
+  nftAirdroppedTxHash?: string;
 }
 
 export async function getUserMint(
@@ -53,7 +57,7 @@ export async function getUserMints(uid: string): Promise<Mint[]> {
     .where("uid", "==", uid)
     .get();
 
-  return userMints.docs.map(
+  const mints = userMints.docs.map(
     (doc) =>
       ({
         id: doc.id,
@@ -62,4 +66,13 @@ export async function getUserMints(uid: string): Promise<Mint[]> {
         airdroppedAt: doc.data().airdroppedAt?.toDate(),
       } as unknown as Mint)
   );
+
+  const mintsWithStatus = await Promise.all(
+    mints.map(async (mint) => {
+      mint.baseClaimState = await getClaimState(mint.projectId, uid);
+      return mint;
+    })
+  );
+
+  return mintsWithStatus;
 }

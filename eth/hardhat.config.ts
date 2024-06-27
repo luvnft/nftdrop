@@ -12,7 +12,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     base_sepolia: {
-      url: "https://sepolia.base.org",
+      url: "https://api.developer.coinbase.com/rpc/v1/base-sepolia/hvla5h8gm-vJOii6BHRjyyYljKQ7se58", //"https://sepolia.base.org",
       accounts: process.env.WALLET_PRIVATE_KEY
         ? [process.env.WALLET_PRIVATE_KEY]
         : [],

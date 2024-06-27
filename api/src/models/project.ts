@@ -10,6 +10,8 @@ export interface Project {
   uid: string;
   claimOpen: boolean;
   mintCount?: number;
+  existsOnChain?: boolean;
+  txHash?: string;
 }
 
 export async function addProject(project: Project) {
@@ -38,10 +40,21 @@ export async function getProject(projectId: string): Promise<Project | null> {
   return project.exists ? (project.data() as Project) : null;
 }
 
+export async function updateProjectOnchain(projectId: string, txHash: string) {
+  await firestore
+    .doc(`projects/${projectId}`)
+    .update({ txHash, existsOnChain: true });
+}
+
+// Remember to check that the project exists on chain before setting claimOpen to true
 export async function updateProjectClaimOpen(
   projectId: string,
   claimOpen: boolean
 ) {
+  const setValues: any = { claimOpen };
+  if (claimOpen) {
+    setValues.existsOnChain = true;
+  }
   await firestore.doc(`projects/${projectId}`).update({ claimOpen });
 }
 

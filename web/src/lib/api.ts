@@ -49,6 +49,15 @@ export function fetchProjects(token: string) {
 	});
 }
 
+export function recordProjectOnChain(token: string, projectId: string) {
+	return fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}/recordOnChain`, {
+		method: 'POST',
+		headers: {
+			Authorization: `${token}`
+		}
+	});
+}
+
 export function setProjectClaimOpen(token: string, projectId: string, claimOpen: boolean) {
 	return fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}/claimOpen`, {
 		method: 'PATCH',

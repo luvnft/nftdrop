@@ -2,6 +2,11 @@
 
 ## Development
 
+Compile
+```shell
+npx hardhat compile
+```
+
 Shell 1:
 ```shell
 npx hardhat node

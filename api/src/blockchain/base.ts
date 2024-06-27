@@ -1,7 +1,8 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-import { ethers, JsonRpcProvider } from "ethers";
+import { ethers, formatEther, JsonRpcProvider } from "ethers";
 import NFTAirdropTracker from "../../../eth/artifacts/contracts/NFTAirdropTracker.sol/NFTAirdropTracker.json";
+import logger from "../utils/logger";
 
 const { BASE_RPC_URL, WALLET_PRIVATE_KEY, DEPLOYED_CONTRACT_ADDRESS } =
   process.env;
@@ -26,18 +27,87 @@ const contract = new ethers.Contract(
   signer
 );
 
-export async function createProject(projectId: string) {
-  const tx = await contract.createProject(projectId);
-  await tx.wait();
-  console.log(`Project ${projectId} created`);
+interface TransactionResult {
+  success: boolean;
+  transactionHash: string;
+  blockNumber?: number;
 }
 
-export async function recordClaim(projectId: string, userId: string) {
-  const tx = await contract.recordClaim(projectId, userId);
-  await tx.wait();
-  console.log(`Claim recorded for user ${userId} in project ${projectId}`);
+async function executeTransaction(
+  transactionPromise: Promise<ethers.ContractTransactionResponse>,
+  actionDescription: string
+): Promise<TransactionResult> {
+  try {
+    const tx = await transactionPromise;
+    logger.info(`${actionDescription} transaction hash:`, tx.hash);
+
+    const receipt = await tx.wait();
+
+    if (receipt && receipt.status === 1) {
+      logger.info(
+        `${actionDescription} successful. Block number: ${receipt.blockNumber}`
+      );
+      return {
+        success: true,
+        transactionHash: tx.hash,
+        blockNumber: receipt.blockNumber,
+      };
+    } else {
+      logger.error(`${actionDescription} failed.`);
+      return {
+        success: false,
+        transactionHash: tx.hash,
+      };
+    }
+  } catch (error) {
+    logger.error(`Error in ${actionDescription}:`, error);
+    throw error;
+  }
+}
+export async function doesProjectExistOnChain(
+  projectId: string
+): Promise<boolean> {
+  try {
+    return await contract.doesProjectExist(projectId);
+  } catch (error) {
+    console.error(`Error checking if project ${projectId} exists:`, error);
+    throw error;
+  }
+}
+export async function recordProjectOnChain(projectId: string) {
+  return executeTransaction(
+    contract.createProject(projectId),
+    `Creating project ${projectId}`
+  );
+}
+export async function recordClaimOnChain(projectId: string, userId: string) {
+  return executeTransaction(
+    contract.recordClaim(projectId, userId),
+    `Recording claim for user ${userId} in project ${projectId}`
+  );
 }
 
-export function getWallet() {
-  return signer;
+export enum ClaimState {
+  NotClaimed = 0,
+  Claimed = 1,
+  Airdropped = 2,
+}
+
+export async function getClaimState(
+  projectId: string,
+  userId: string
+): Promise<ClaimState> {
+  const claimStateBigInt = await contract.getClaimState(projectId, userId);
+  const claimState = Number(claimStateBigInt);
+  logger.info(
+    `Claim state for user ${userId} in project ${projectId}`,
+    claimState
+  );
+  return claimState;
+}
+
+export async function getWalletBalance(walletAddress: string) {
+  const wei = await provider.getBalance(walletAddress);
+  const eth = formatEther(wei);
+  return { walletAddress, wei: wei.toString(), eth };
 }

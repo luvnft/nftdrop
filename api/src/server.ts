@@ -8,14 +8,6 @@ const port = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-    // Test the Firestore connection
-    const mint = await firestore.doc("mints/1").get();
-    if (!mint.exists) {
-      logger.error("Can't get 'mints/1', stopping api");
-      process.exit(1);
-    }
-    logger.info("Successfully connected to firestore!");
-
     app.listen(port, () => {
       logger.info(`Server is running on port ${port}`);
     });

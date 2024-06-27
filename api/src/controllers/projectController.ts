@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as projectService from "../services/projectService";
-import logger from "../utils/logger";
+import { doesProjectExistOnChain } from "../blockchain/base";
 
 export async function createProject(req: Request, res: Response) {
   if (!req.user) {
@@ -56,6 +56,17 @@ export async function getProject(req: Request, res: Response) {
   res.send(project);
 }
 
+export async function recordOnChain(req: Request, res: Response) {
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required");
+  }
+
+  const data = await projectService.createProjectOnChain(projectId);
+  res.status(200).send(data);
+}
+
 export async function updateClaimOpen(req: Request, res: Response) {
   const { projectId } = req.params;
 
@@ -70,7 +81,7 @@ export async function updateClaimOpen(req: Request, res: Response) {
   }
 
   await projectService.updateClaimOpen(projectId, claimOpen);
-  res.send("Claim open updated");
+  res.status(200).send();
 }
 
 export async function canMint(req: Request, res: Response) {
