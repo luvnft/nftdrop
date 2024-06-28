@@ -18,6 +18,13 @@ const config: HardhatUserConfig = {
         : [],
       chainId: 84532,
     },
+    zora_sepolia: {
+      url: "https://sepolia.rpc.zora.energy",
+      accounts: process.env.WALLET_PRIVATE_KEY
+        ? [process.env.WALLET_PRIVATE_KEY]
+        : [],
+      chainId: 999999999,
+    },
   },
 };
 

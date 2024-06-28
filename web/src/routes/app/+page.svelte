@@ -9,6 +9,11 @@
 	import ProjectList from '$lib/components/ProjectList.svelte';
 	import NftGallery from '$lib/components/NFTGallery.svelte';
 	import Loader from '$lib/components/Loader.svelte';
+	import {
+		getUserAirdropAddress,
+		LOCAL_STORAGE_ACTIVE_SECTION_KEY,
+		LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY
+	} from '$lib/localStorage';
 
 	/**
 	 * @type {import("@firebase/auth").User | null}
@@ -16,15 +21,20 @@
 	let currentUser = null;
 	let authInitialised = false;
 	let activeSection = 'projects';
+	/**
+	 * @type {string | null}
+	 */
+	let airdropWalletAddress = null;
 
-	onMount(() => {
-		const storedSection = localStorage.getItem('activeSection');
+	onMount(async () => {
+		const storedSection = localStorage.getItem(LOCAL_STORAGE_ACTIVE_SECTION_KEY);
 		if (storedSection) {
 			activeSection = storedSection;
 		}
 
-		auth.onAuthStateChanged((user) => {
+		auth.onAuthStateChanged(async (user) => {
 			currentUser = user;
+			airdropWalletAddress = await getUserAirdropAddress(currentUser);
 			authInitialised = true;
 		});
 	});
@@ -34,7 +44,7 @@
 	 */
 	function setActiveSection(section) {
 		activeSection = section;
-		localStorage.setItem('activeSection', section);
+		localStorage.setItem(LOCAL_STORAGE_ACTIVE_SECTION_KEY, section);
 	}
 </script>
 
@@ -60,7 +70,7 @@
 				</div>
 			{:else if activeSection === 'nfts'}
 				<div in:fly={{ y: 20, duration: 500 }}>
-					<NftGallery {currentUser} />
+					<NftGallery {currentUser} {airdropWalletAddress} />
 				</div>
 			{/if}
 		{:else if !authInitialised}

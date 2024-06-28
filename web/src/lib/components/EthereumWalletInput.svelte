@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { auth } from '$lib/firebase';
 	import { setUserWallet } from '$lib/api';
+	import { LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY } from '$lib/localStorage';
 
 	const dispatch = createEventDispatcher();
 
@@ -48,6 +49,8 @@
 			}
 
 			successMessage = 'Wallet address submitted successfully!';
+
+			localStorage.setItem(`${LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY}`, walletAddress);
 
 			await new Promise((resolve) => setTimeout(resolve, 1500));
 

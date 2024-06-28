@@ -7,14 +7,14 @@ export async function getUserInfo(req: Request, res: Response) {
 }
 
 export async function updateUserWallet(req: Request, res: Response) {
-  const { primaryEthereumWallet } = req.body;
+  const { airdropWalletAddress } = req.body;
 
-  if (!primaryEthereumWallet) {
-    return res.status(400).send("primaryEthereumWallet is required");
+  if (!airdropWalletAddress) {
+    return res.status(400).send("airdropWalletAddress is required");
   }
 
   try {
-    await userService.updateUserWallet(req.user!.uid, primaryEthereumWallet);
+    await userService.updateUserWallet(req.user!.uid, airdropWalletAddress);
     res.send("ok");
   } catch (e) {
     res.status(500).send("Error setting wallet");

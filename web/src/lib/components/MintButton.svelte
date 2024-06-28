@@ -11,7 +11,7 @@
 	export let claimedAt;
 	export let userAlreadyMinted;
 	export let project;
-	export let primaryEthereumWallet;
+	export let airdropWalletAddress;
 	export let walletAddressSubmitted;
 	/**
 	 * @type {import("@firebase/auth").User | null}
@@ -59,25 +59,12 @@
 				>
 			{/if}
 		</p>
-		{#if !primaryEthereumWallet}
+		{#if !airdropWalletAddress}
 			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
-		{:else if mint.airdroppedAt}
-			<p>
-				We have already airdropped the NFT to your wallet {primaryEthereumWallet}
-				{#if mint.nftAirdroppedTxHash}
-					<br />
-					<p>
-						<a
-							class="text-link"
-							href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${mint.nftAirdroppedTxHash}`}
-							target="_blank"
-							rel="noopener noreferrer"><i>View airdrop on Blockscout</i></a
-						>
-					</p>
-				{/if}
-			</p>
+		{:else if mint.baseClaimState === 2}
+			<p>We have already airdropped the NFT to your wallet</p>
 		{:else}
-			<p>We will airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
+			<p>We will airdrop the NFT to your wallet <code>{airdropWalletAddress}</code></p>
 		{/if}
 	</div>
 {:else}
@@ -96,10 +83,10 @@
 			{/if}
 		</p>
 
-		{#if !primaryEthereumWallet}
+		{#if !airdropWalletAddress}
 			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
 		{:else}
-			<p>We will soon airdrop the NFT to your wallet <code>{primaryEthereumWallet}</code></p>
+			<p>We will soon airdrop the NFT to your wallet <code>{airdropWalletAddress}</code></p>
 		{/if}
 	</div>
 {/if}
@@ -153,6 +140,7 @@
 		backdrop-filter: blur(10px);
 		border-radius: 15px;
 		margin: 2em 0;
+		padding: 2em;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		text-align: center;
 		width: 100%;

@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase-admin/firestore";
 import { firestore } from "../config/firebase";
 
 export interface Project {
@@ -13,8 +14,11 @@ export interface Project {
   mintCount?: number;
   existsOnChain?: boolean;
   txHash?: string;
-  latestClaimAt?: Date;
-  lastUpdatedOnChainAt?: Date;
+  latestClaimAt?: Timestamp;
+  lastUpdatedOnChainAt?: Timestamp;
+  waitingForAirdropCount?: number;
+  eligibleAddresses?: string[];
+  eligibleAddressesLastUpdatedAt?: Timestamp;
 }
 
 export async function addProject(project: Project) {

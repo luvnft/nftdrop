@@ -16,7 +16,8 @@ export async function verifyToken(
     req.user = decodedToken;
     next();
   } catch (e) {
-    logger.error("Error verifying token", e, req.headers.authorization);
+    logger.error("Error verifying token");
+    logger.error(e);
     res.status(401).send("Unauthorized");
   }
 }

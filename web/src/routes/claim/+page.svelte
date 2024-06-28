@@ -11,6 +11,7 @@
 	import ProjectCard from '$lib/components/ProjectCard.svelte';
 	import SidePanel from '$lib/components/SidePanel.svelte';
 	import { createMint } from '$lib/api';
+	import { getUserAirdropAddress, LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY } from '$lib/localStorage';
 
 	let authInitialised = false;
 	/**
@@ -29,7 +30,11 @@
 	 * @type {any}
 	 */
 	let claimedAt = undefined;
-	let primaryEthereumWallet = '';
+
+	/**
+	 * @type {string | null}
+	 */
+	let airdropWalletAddress = null;
 	let userAlreadyMinted = false;
 
 	auth.onAuthStateChanged(async (user) => {
@@ -49,16 +54,17 @@
 					Authorization: `${token}`
 				}
 			});
+			airdropWalletAddress = await getUserAirdropAddress(currentUser);
 			if (res.status === 200) {
 				const body = await res.json();
 				userAlreadyMinted = body.userAlreadyMinted;
 				claimedAt = body.claimedAt;
-				primaryEthereumWallet = body.primaryEthereumWallet;
 			} else {
 				console.error('Error fetching minting status', res);
 			}
 		} else {
-			primaryEthereumWallet = '';
+			airdropWalletAddress = '';
+			localStorage.removeItem(LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY);
 			userAlreadyMinted = false;
 		}
 	});
@@ -74,8 +80,6 @@
 		const res = await fetch(`${PUBLIC_API_BASE_URL}/project/${id}`, {
 			method: 'GET'
 		});
-
-		await new Promise((resolve) => setTimeout(resolve, 1000));
 		if (res.status === 200) {
 			const body = await res.json();
 			project = body;
@@ -91,7 +95,8 @@
 	 * @param {{ detail: string; }} event
 	 */
 	function walletAddressSubmitted(event) {
-		primaryEthereumWallet = event.detail;
+		airdropWalletAddress = event.detail;
+		localStorage.setItem(LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY, airdropWalletAddress);
 	}
 
 	async function mint() {
@@ -119,7 +124,6 @@
 		const body = await res.json();
 
 		project.mintCount = body.mintCount;
-		primaryEthereumWallet = body.mint?.walletAddress;
 		claimedAt = body.claimedAt;
 
 		isMinting = false;
@@ -168,7 +172,7 @@
 				{userAlreadyMinted}
 				{project}
 				{currentUser}
-				{primaryEthereumWallet}
+				{airdropWalletAddress}
 				{walletAddressSubmitted}
 			/>
 		{/if}

@@ -7,7 +7,7 @@ export function setUserWallet(token: string, walletAddress: string) {
 			Authorization: `${token}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({ primaryEthereumWallet: walletAddress })
+		body: JSON.stringify({ airdropWalletAddress: walletAddress })
 	});
 }
 

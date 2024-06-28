@@ -55,8 +55,6 @@ export async function mintNFT(
     nftContractAddress: project.nftContractAddress,
     tokenId: project.tokenId,
     timestamp: Timestamp.fromDate(new Date()),
-    walletAddress: userData.primaryEthereumWallet ?? null,
-    airdroppedAt: null,
     baseClaimState: ClaimState.Claimed,
     recordClaimTxHash: transactionResult.transactionHash,
   };

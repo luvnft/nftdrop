@@ -9,6 +9,10 @@
 	 * @type {import("@firebase/auth").User}
 	 */
 	export let currentUser;
+	/**
+	 * @type {string | null}
+	 */
+	export let airdropWalletAddress;
 
 	/**
 	 * @type {string | any[]}
@@ -42,29 +46,30 @@
 	}
 
 	/**
-	 * @param {{ walletAddress: any; baseClaimState: number, airdroppedAt: string | number | Date; }} nft
+	 * @param {number} baseClaimState
+	 * @param {string | null} airdropWalletAddress
 	 */
-	function getMintStatus(nft) {
-		switch (nft.baseClaimState) {
+	function getMintStatus(baseClaimState, airdropWalletAddress) {
+		switch (baseClaimState) {
 			case 0:
 				return {
 					status: `Not claimed`,
 					class: 'status-unknown'
 				};
 			case 1:
-				if (!nft.walletAddress) {
+				if (!airdropWalletAddress) {
 					return {
 						status: 'Waiting for you to add your wallet address on your Profile',
 						class: 'status-unknown'
 					};
 				}
 				return {
-					status: `Waiting for airdrop to ${nft.walletAddress}`,
+					status: `Waiting for project owner to airdrop to your wallet`,
 					class: 'status-waiting'
 				};
 			case 2:
 				return {
-					status: `Airdropped to ${nft.walletAddress} at ${new Date(nft.airdroppedAt).toLocaleString()}`,
+					status: `NFT has been airdropped to your wallet`,
 					class: 'status-airdropped'
 				};
 			default:
@@ -84,7 +89,7 @@
 	{:else if nfts.length > 0}
 		<div class="nft-grid">
 			{#each nfts as nft (nft.id)}
-				{@const status = getMintStatus(nft)}
+				{@const status = getMintStatus(nft.baseClaimState, airdropWalletAddress)}
 				<div class="nft-card">
 					<img src={nft.image} alt={nft.title} class="nft-image" />
 					<div class="nft-info">

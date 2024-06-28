@@ -54,7 +54,7 @@ app.use(
     res: express.Response,
     _: express.NextFunction
   ) => {
-    logger.error(err.stack);
+    logger.error(err);
     res.status(500).send("Something broke!");
   }
 );

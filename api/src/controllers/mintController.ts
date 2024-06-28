@@ -13,7 +13,7 @@ export async function mintNFT(req: Request, res: Response) {
     const result = await mintService.mintNFT(projectId, req.user!.uid);
     res.status(200).send(result);
   } catch (error) {
-    logger.error("Error minting NFT", (error as Error).message);
+    logger.error(error);
     res.status(400).send();
   }
 }

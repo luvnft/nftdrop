@@ -1,7 +1,7 @@
 import { firestore } from "../config/firebase";
 
 export interface UserData {
-  primaryEthereumWallet?: string;
+  airdropWalletAddress?: string;
 }
 
 export async function getUserData(uid: string): Promise<UserData> {
@@ -12,11 +12,8 @@ export async function getUserData(uid: string): Promise<UserData> {
   return res.data() as UserData;
 }
 
-export async function setUserWallet(
-  uid: string,
-  primaryEthereumWallet: string
-) {
+export async function setUserWallet(uid: string, airdropWalletAddress: string) {
   await firestore
     .doc(`users/${uid}`)
-    .set({ primaryEthereumWallet }, { merge: true });
+    .set({ airdropWalletAddress }, { merge: true });
 }

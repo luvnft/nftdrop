@@ -13,7 +13,8 @@ async function startServer() {
       logger.info("Using BASE_RPC_URL: " + process.env.BASE_RPC_URL);
     });
   } catch (e) {
-    logger.error("Error starting server", e);
+    logger.error("Error starting server");
+    logger.error(e);
     firestore.terminate();
     process.exit(1);
   }

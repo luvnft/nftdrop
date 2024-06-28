@@ -17,13 +17,24 @@ import {
   updateEligibleUsersForAirdrop,
 } from "../blockchain/base";
 import logger from "../utils/logger";
-import e from "express";
+import { Timestamp } from "firebase-admin/firestore";
 
 export async function createProject(project: Project): Promise<Project> {
   return await addProject(project);
 }
 
-export async function getProjects(uid: string): Promise<Project[]> {
+function formatProject(project: Project) {
+  return {
+    ...project,
+    latestClaimAt: project.latestClaimAt?.toDate().toISOString(),
+    lastUpdatedOnChainAt: project.lastUpdatedOnChainAt?.toDate().toISOString(),
+    eligibleAddressesLastUpdatedAt: project.eligibleAddressesLastUpdatedAt
+      ?.toDate()
+      .toISOString(),
+  };
+}
+
+export async function getProjects(uid: string): Promise<any[]> {
   const projects = await getProjectsForUser(uid);
   const projectInfoPromises = projects.map(async (project) => {
     const projectExistsOnChain = project.id
@@ -32,7 +43,9 @@ export async function getProjects(uid: string): Promise<Project[]> {
     return { ...project, existsOnChain: projectExistsOnChain };
   });
   const projectInfoList = await Promise.all(projectInfoPromises);
-  return projectInfoList;
+  return projectInfoList.map((project) => {
+    return formatProject(project);
+  });
 }
 
 export async function getProjectInfo(
@@ -50,14 +63,14 @@ export async function canUserMint(projectId: string, uid: string) {
   if (!userMint) {
     return {
       userAlreadyMinted: false,
-      primaryEthereumWallet: userData.primaryEthereumWallet,
+      airdropWalletAddress: userData.airdropWalletAddress,
     };
   }
 
   return {
     userAlreadyMinted: true,
     claimedAt: userMint.timestamp.toDate().toISOString(),
-    primaryEthereumWallet: userData.primaryEthereumWallet,
+    airdropWalletAddress: userData.airdropWalletAddress,
   };
 }
 
@@ -84,14 +97,30 @@ export async function getAirdropStatus(
       );
       throw new Error("Failed to update eligible users for airdrop on chain");
     }
-    await updateProject(projectId, { lastUpdatedOnChainAt: new Date() });
+    const lastUpdatedOnChainAt = new Date();
+    await updateProject(projectId, { lastUpdatedOnChainAt });
+    project.lastUpdatedOnChainAt = Timestamp.fromDate(lastUpdatedOnChainAt);
   }
 
   const eligibleAddresses = await getEligibleUsersForAirdrop(projectId);
+  const eligibleAddressesLastUpdatedAt = Timestamp.now();
 
   logger.info(eligibleAddresses);
+  const waitingForAirdropCount = eligibleAddresses.length;
 
-  return { ...project, eligibleAddresses };
+  await updateProject(projectId, {
+    waitingForAirdropCount,
+    eligibleAddresses,
+    eligibleAddressesLastUpdatedAt,
+  });
+
+  project.eligibleAddressesLastUpdatedAt = eligibleAddressesLastUpdatedAt;
+
+  return {
+    ...formatProject(project),
+    eligibleAddresses,
+    waitingForAirdropCount,
+  };
 }
 
 export async function createProjectOnChain(projectId: string) {

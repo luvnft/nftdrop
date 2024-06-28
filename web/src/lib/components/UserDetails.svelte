@@ -1,5 +1,7 @@
 <script>
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
+	import { fetchUserData } from '$lib/api';
+	import { LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY } from '$lib/localStorage';
 	import EthereumWalletInput from './EthereumWalletInput.svelte';
 
 	/**
@@ -7,20 +9,16 @@
 	 */
 	export let currentUser;
 
-	let primaryEthereumWallet = '';
+	let airdropWalletAddress = '';
 	let isEditingWallet = false;
 
 	async function fetchUserDetails() {
 		const token = await currentUser.getIdToken();
-		const res = await fetch(`${PUBLIC_API_BASE_URL}/user`, {
-			method: 'GET',
-			headers: {
-				Authorization: `${token}`
-			}
-		});
+		const res = await fetchUserData(token);
 		if (res.status === 200) {
 			const userData = await res.json();
-			primaryEthereumWallet = userData.primaryEthereumWallet || '';
+			airdropWalletAddress = userData.airdropWalletAddress || '';
+			localStorage.setItem(`${LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY}`, airdropWalletAddress);
 		}
 	}
 
@@ -28,7 +26,7 @@
 	 * @param {{ detail: string; }} event
 	 */
 	async function updateWalletAddress(event) {
-		primaryEthereumWallet = event.detail;
+		airdropWalletAddress = event.detail;
 		isEditingWallet = false;
 	}
 
@@ -50,11 +48,11 @@
 	</p>
 	<div class="wallet-section">
 		<h3>Ethereum Wallet</h3>
-		{#if primaryEthereumWallet && !isEditingWallet}
-			<p>{primaryEthereumWallet}</p>
+		{#if airdropWalletAddress && !isEditingWallet}
+			<p>{airdropWalletAddress}</p>
 			<button on:click={() => (isEditingWallet = true)}>Edit</button>
 		{:else if isEditingWallet}
-			<p>{primaryEthereumWallet}</p>
+			<p>{airdropWalletAddress}</p>
 			<EthereumWalletInput on:walletAddressSubmitted={updateWalletAddress} hideInfo={true} />
 			<button style:margin-top="2em" on:click={() => (isEditingWallet = false)}>Cancel</button>
 		{:else}

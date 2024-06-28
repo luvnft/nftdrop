@@ -9,14 +9,14 @@ export async function getUserInfo(uid: string): Promise<UserData> {
 
 export async function updateUserWallet(
   uid: string,
-  primaryEthereumWallet: string
+  airdropWalletAddress: string
 ): Promise<void> {
-  const txResult = await recordWalletAddressOnChain(uid, primaryEthereumWallet);
+  const txResult = await recordWalletAddressOnChain(uid, airdropWalletAddress);
 
   if (!txResult.success) {
     logger.error("Failed to record wallet address on blockchain", txResult);
     throw new Error("Failed to record wallet address on blockchain");
   }
 
-  await setUserWallet(uid, primaryEthereumWallet);
+  await setUserWallet(uid, airdropWalletAddress);
 }

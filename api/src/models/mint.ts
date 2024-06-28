@@ -12,11 +12,8 @@ export interface Mint {
   nftContractAddress: string;
   tokenId: string;
   timestamp: Timestamp;
-  walletAddress: string | null;
-  airdroppedAt: Timestamp | null;
   baseClaimState: ClaimState;
   recordClaimTxHash: string;
-  nftAirdroppedTxHash?: string;
 }
 
 export async function getUserMint(
@@ -64,7 +61,6 @@ export async function getUserMints(uid: string): Promise<Mint[]> {
         id: doc.id,
         ...doc.data(),
         timestamp: doc.data().timestamp.toDate(),
-        airdroppedAt: doc.data().airdroppedAt?.toDate(),
       } as unknown as Mint)
   );
 

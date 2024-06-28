@@ -60,7 +60,8 @@ async function executeTransaction(
       };
     }
   } catch (error) {
-    logger.error(`Error in ${actionDescription}:`, error);
+    logger.error(`Error in ${actionDescription}`);
+    logger.error(error);
     throw error;
   }
 }
@@ -90,16 +91,6 @@ export async function recordClaimOnChain(projectId: string, userId: string) {
     `Recording claim for user ${userId} in project ${projectId}`
   );
 }
-
-/* export async function recordNftAirdroppedOnChain(
-  projectId: string,
-  userId: string
-) {
-  return executeTransaction(
-    contract.markNFTAirdropped(projectId, userId),
-    `Marking NFT airdropped for user ${userId} in project ${projectId}`
-  );
-} */
 
 export async function recordWalletAddressOnChain(
   userId: string,

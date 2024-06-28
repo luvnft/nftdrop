@@ -30,6 +30,7 @@
 	let showCreateForm = false;
 	let recordAirdropInProgress = false;
 	let updatingAirdropStatusOnChain = false;
+	let shouldUpdateOnChain = false;
 
 	onMount(() => {
 		if (currentUser) {
@@ -121,109 +122,84 @@
 		}
 	}
 
-	/* async function copyWalletAddresses(projectId) {
-		const token = await currentUser.getIdToken();
-		const res = await api.getProjectWalletAddresses(token, projectId);
-		if (res.status === 200) {
-			const addresses = await res.json();
-			navigator.clipboard.writeText(addresses.join('\n'));
-			alert('Wallet addresses copied to clipboard!');
-		}
-	} */
 	/**
 	 * @param {any} project
 	 */
 	async function copyWalletAddresses(project) {
-		/* const addresses = [
-			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92',
-			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92',
-			'0x9477f1031d1b2Ec181E8c3121e523877c7460C92'
-		];
-		 */
-
-		let shouldUpdateOnChain =
-			project.lastUpdatedOnChainAt && project.lastUpdatedOnChainAt < project.latestClaimAt;
-
 		/**
 		 * @type {string[]}
 		 */
 		let addresses = [];
 
 		if (shouldUpdateOnChain) {
-			const willUpdate = confirm(
-				'New claims have been made since last update on chain. Update now? This will incur a small gas fee which will be covered by us. If you skip this, the copied addresses might contain addresses which already received the airdrop.'
+			const shouldContinue = confirm(
+				'We are going to check for landed airdrops and update the airdrop statuses on chain, to only give you the addresses which have not yet received your airdrop. This will incur a small gas fee which will be covered by us. Please do this only after you have airdropped NFTs. Continue?'
 			);
-			const token = await currentUser.getIdToken();
-			if (willUpdate) updatingAirdropStatusOnChain = true;
-			const res = await api.fetchProjectAirdropStatus(token, project.id, willUpdate);
-			if (res.status === 200) {
-				const { mintCount, waitingForAirdropCount, lastUpdatedOnChainAt, eligibleAddresses } =
-					await res.json();
-				addresses = eligibleAddresses;
-				projects = projects.map((project) => {
-					if (project.id === project.id) {
-						return { ...project, mintCount, waitingForAirdropCount, lastUpdatedOnChainAt };
-					}
-					return project;
-				});
+			if (!shouldContinue) {
+				return;
 			}
-			if (willUpdate) updatingAirdropStatusOnChain = false;
+		}
+
+		updatingAirdropStatusOnChain = true;
+
+		const token = await currentUser.getIdToken();
+		const res = await api.fetchProjectAirdropStatus(token, project.id, shouldUpdateOnChain);
+		if (res.status === 200) {
+			const {
+				mintCount,
+				waitingForAirdropCount,
+				lastUpdatedOnChainAt,
+				eligibleAddresses,
+				eligibleAddressesLastUpdatedAt
+			} = await res.json();
+			addresses = eligibleAddresses;
+			projects = projects.map((p) => {
+				if (p.id === project.id) {
+					return {
+						...p,
+						mintCount,
+						waitingForAirdropCount,
+						lastUpdatedOnChainAt,
+						eligibleAddresses,
+						eligibleAddressesLastUpdatedAt
+					};
+				}
+				return p;
+			});
+		}
+
+		updatingAirdropStatusOnChain = false;
+	}
+
+	/**
+	 * @param {{ eligibleAddresses: string[]; }} project
+	 */
+	function copyEligibleAddresses(project) {
+		if (project.eligibleAddresses && project.eligibleAddresses.length > 0) {
+			const addresses = project.eligibleAddresses.join('\n');
+			navigator.clipboard
+				.writeText(addresses)
+				.then(() =>
+					alert(
+						(project.eligibleAddresses.length > 1
+							? `${project.eligibleAddresses.length} wallet addresses copied to clipboard!`
+							: 'One wallet address copied to clipboard!') +
+							'\n\nTo airdrop the NFTs: Go to your NFT page on Zora -> Select Manage settings -> Airdrop -> Paste the addresses in the text box -> Click Airdrop. Please double check that the contract address and token ID match with this project before airdropping. Otherwise we cannot track the airdrops on Base.\n\nAfter airdropping, come back here and click the refresh button to update the airdrop status on chain.'
+					)
+				)
+				.catch((err) => console.error('Failed to copy addresses:', err));
 		} else {
-			const token = await currentUser.getIdToken();
-			const res = await api.fetchProjectAirdropStatus(token, project.id, false);
-			if (res.status === 200) {
-				const { mintCount, waitingForAirdropCount, lastUpdatedOnChainAt, eligibleAddresses } =
-					await res.json();
-				addresses = eligibleAddresses;
-				projects = projects.map((project) => {
-					if (project.id === project.id) {
-						return { ...project, mintCount, waitingForAirdropCount, lastUpdatedOnChainAt };
-					}
-					return project;
-				});
-			}
+			alert('No addresses to copy');
 		}
-
-		if (addresses.length === 0) {
-			alert('No addresses to copy!');
-			return;
-		}
-
-		console.log('got addresses', addresses.length, addresses, addresses.join('\n'));
-
-		navigator.clipboard.writeText(addresses.join('\n'));
-
-		alert(
-			addresses.length > 1
-				? `${addresses.length} wallet addresses copied to clipboard`
-				: 'Wallet address copied to clipboard' +
-						'\n\nTo airdrop the NFTs: Go to your NFT page on Zora -> Select Manage settings -> Airdrop -> Paste the addresses in the text box -> Click Airdrop. Please double check that the contract address and token ID match with this project before airdropping. Otherwise we cannot track the airdrops on Base.\n\nAfter airdropping, come back here and click the refresh button to update the airdrop status on chain.'
-		);
 	}
 
 	/**
 	 * @param {string} projectId
 	 */
-	async function updateAirdropStatusOnChain(projectId) {
-		const willUpdate = confirm(
-			'Check for landed airdrops and update the airdrop status on chain. This will incur a small gas fee which will be covered by us. Please do not do this unless you have airdropped NFTs on Zora already. Continue?'
+	function toggleAddressList(projectId) {
+		projects = projects.map((p) =>
+			p.id === projectId ? { ...p, showAddresses: !p.showAddresses } : p
 		);
-		if (!willUpdate) {
-			return;
-		}
-		updatingAirdropStatusOnChain = true;
-		const token = await currentUser.getIdToken();
-		const res = await api.fetchProjectAirdropStatus(token, projectId, true);
-		if (res.status === 200) {
-			const { mintCount, waitingForAirdropCount, lastUpdatedOnChainAt } = await res.json();
-			projects = projects.map((project) => {
-				if (project.id === projectId) {
-					return { ...project, mintCount, waitingForAirdropCount, lastUpdatedOnChainAt };
-				}
-				return project;
-			});
-		}
-		updatingAirdropStatusOnChain = false;
 	}
 
 	$: if (currentUser) {
@@ -312,30 +288,128 @@
 						{/if}
 
 						{#if project.mintCount > 0}
-							<p class="claim-status">Total claims: {project.mintCount}</p>
 							<p class="claim-status">
-								Claims waiting for airdrop: {project.waitingForAirdropCount ?? project.mintCount}
-								{project.lastUpdatedOnChainAt
-									? `(Last
-									checked on ${project.lastUpdatedOnChainAt}`
-									: ''}
-
-								{#if project.existsOnChain}
-									<button
-										title="Check for landed claims and update the airdrop status on chain. This will incur a small gas fee which will be covered by us."
-										on:click={() => updateAirdropStatusOnChain(project.id)}
-										class="btn btn-refresh"
-										disabled={updatingAirdropStatusOnChain ||
-											(project.lastUpdatedOnChainAt &&
-												project.lastUpdatedOnChainAt < project.latestClaimAt)}>⟳</button
-									>
+								Total claims: {project.mintCount}
+								{#if project.latestClaimAt}
+									<br />
+									<i>Latest claim on {project.latestClaimAt}</i>
 								{/if}
 							</p>
 
 							{#if project.existsOnChain}
-								<button on:click={() => copyWalletAddresses(project)} class="btn btn-secondary">
-									Copy Wallet Addresses Waiting for Airdrop
-								</button>
+								{@const checkboxDisabled =
+									updatingAirdropStatusOnChain ||
+									!project.eligibleAddresses ||
+									project.eligibleAddresses.length === 0}
+								<div class="airdrop-actions">
+									<label class="checkbox-label">
+										<input
+											type="checkbox"
+											title="Check to update received airdrop claims on chain. This will incur a small gas fee which will be covered by us."
+											on:click={() => (shouldUpdateOnChain = !shouldUpdateOnChain)}
+											class="checkbox"
+											disabled={checkboxDisabled}
+											checked={shouldUpdateOnChain}
+										/>
+										<span
+											style:opacity={checkboxDisabled ? 0.5 : 1}
+											style:cursor={checkboxDisabled ? 'not-allowed' : 'pointer'}
+										>
+											Check to remove already airdropped addresses from the list of eligible
+											addresses during Update
+											{#if project.lastUpdatedOnChainAt}
+												<br />
+												<i>Received airdrops last updated on {project.lastUpdatedOnChainAt}</i>
+											{/if}
+										</span>
+									</label>
+									<button
+										on:click={() => copyWalletAddresses(project)}
+										class="btn btn-secondary"
+										disabled={updatingAirdropStatusOnChain}
+									>
+										Update Eligible Addresses
+									</button>
+								</div>
+								<div class="eligible-addresses-container">
+									<div class="eligible-addresses-header">
+										<h4>
+											Eligible Addresses ({project.eligibleAddresses?.length ?? 0})
+											{#if project.eligibleAddressesLastUpdatedAt}
+												<br />
+												<i>Last updated at {project.eligibleAddressesLastUpdatedAt}</i>
+											{/if}
+										</h4>
+										<div class="eligible-addresses-actions">
+											<button
+												on:click={() => copyEligibleAddresses(project)}
+												class="btn btn-icon"
+												title="Copy addresses"
+												disabled={!project.eligibleAddresses ||
+													project.eligibleAddresses.length === 0}
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="24"
+													height="24"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												>
+													<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+													<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+												</svg>
+											</button>
+											<button
+												on:click={() => toggleAddressList(project.id)}
+												class="btn btn-icon"
+												title="Toggle address list"
+												disabled={!project.eligibleAddresses ||
+													project.eligibleAddresses.length === 0}
+											>
+												{#if project.showAddresses}
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														width="24"
+														height="24"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<polyline points="18 15 12 9 6 15"></polyline>
+													</svg>
+												{:else}
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														width="24"
+														height="24"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<polyline points="6 9 12 15 18 9"></polyline>
+													</svg>
+												{/if}
+											</button>
+										</div>
+									</div>
+									{#if project.showAddresses}
+										<div class="eligible-addresses-list">
+											{#each project.eligibleAddresses || [] as address}
+												<div class="address">{address}</div>
+											{/each}
+										</div>
+									{/if}
+								</div>
 							{/if}
 						{/if}
 						<p class="claim-status">
@@ -354,7 +428,7 @@
 						</p>
 						<div class="project-actions">
 							<a href="/claim/?id={project.id}" class="btn btn-primary">View Claim Page</a>
-							<a href="/qr/?id={project.id}" class="btn btn-secondary">Get QR Code</a>
+							<a href="/qr/?id={project.id}" class="btn btn-secondary">View QR Code Page</a>
 							<a
 								href="{PUBLIC_ZORA_CO_URL}/manage/1155/base:{project.nftContractAddress}/{project.tokenId}/airdrop"
 								target="_blank"
@@ -442,11 +516,6 @@
 		text-align: center;
 	}
 
-	.btn-refresh {
-		border-radius: 15%;
-		font-size: 1.25rem;
-	}
-
 	.btn-primary {
 		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
 		color: white;
@@ -515,7 +584,123 @@
 		}
 
 		.btn {
-			width: 100%;
+			width: 90%;
 		}
+	}
+
+	.airdrop-actions {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.checkbox-label {
+		display: flex;
+		align-items: center;
+		cursor: pointer;
+		font-size: 1rem;
+		color: var(--text-color);
+	}
+
+	.checkbox {
+		appearance: none;
+		-webkit-appearance: none;
+		width: 20px;
+		height: 20px;
+		border: 2px solid var(--accent-color);
+		border-radius: 4px;
+		margin-right: 0.5rem;
+		margin-bottom: 0;
+		display: grid;
+		place-content: center;
+		cursor: pointer;
+	}
+
+	.checkbox::before {
+		content: '';
+		width: 12px;
+		height: 12px;
+		transform: scale(0);
+		transition: 120ms transform ease-in-out;
+		box-shadow: inset 1em 1em var(--accent-color);
+		transform-origin: center;
+		clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+	}
+
+	.checkbox:checked::before {
+		transform: scale(1);
+	}
+
+	.checkbox:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	/* Responsive styles */
+	@media (max-width: 600px) {
+		.airdrop-actions {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.checkbox-label {
+			margin-top: 0.5rem;
+		}
+	}
+
+	.eligible-addresses-container {
+		background: rgba(0, 0, 0, 0.1);
+		border-radius: 8px;
+		margin-top: 1rem;
+		padding: 1rem;
+	}
+
+	.eligible-addresses-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 0.5rem;
+	}
+
+	.eligible-addresses-header h4 {
+		margin: 0;
+		color: var(--accent-color);
+	}
+
+	.eligible-addresses-actions {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.btn-icon {
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0.25rem;
+		color: var(--text-color);
+		transition: color 0.3s ease;
+	}
+
+	.btn-icon:hover:not(:disabled) {
+		color: var(--accent-color);
+	}
+
+	.eligible-addresses-list {
+		max-height: 200px;
+		overflow-y: auto;
+		background: rgba(0, 0, 0, 0.05);
+		border-radius: 4px;
+		padding: 0.5rem;
+	}
+
+	.address {
+		font-family: monospace;
+		padding: 0.25rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.address:last-child {
+		border-bottom: none;
 	}
 </style>
