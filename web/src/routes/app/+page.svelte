@@ -9,11 +9,7 @@
 	import ProjectList from '$lib/components/ProjectList.svelte';
 	import NftGallery from '$lib/components/NFTGallery.svelte';
 	import Loader from '$lib/components/Loader.svelte';
-	import {
-		getUserAirdropAddress,
-		LOCAL_STORAGE_ACTIVE_SECTION_KEY,
-		LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY
-	} from '$lib/localStorage';
+	import { getUserAirdropAddress, LOCAL_STORAGE_ACTIVE_SECTION_KEY } from '$lib/localStorage';
 
 	/**
 	 * @type {import("@firebase/auth").User | null}

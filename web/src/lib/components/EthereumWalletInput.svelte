@@ -71,12 +71,14 @@
 		safe for you.
 	</p>
 	<p>
-		A wallet compatible with the Zora and Base networks is required. If you don't have one, we
-		suggest using <a
-			href="https://metamask.io/"
+		A wallet compatible with the Base network is required. If you don't have one, we suggest using <a
+			href="https://www.coinbase.com/wallet"
 			target="_blank"
 			rel="noopener noreferrer"
-			class="wallet-link">Metamask</a
+			class="wallet-link">Coinbase Wallet</a
+		>,
+		<a href="https://metamask.io/" target="_blank" rel="noopener noreferrer" class="wallet-link"
+			>Metamask</a
 		>
 		or
 		<a

@@ -6,7 +6,9 @@
 
 <header>
 	<nav>
-		<div class="logo">Mint Wave</div>
+		<div class="logo">
+			<img src="mintwave.svg" alt="Mint Wave" class="icon-inline" />Mint Wave
+		</div>
 		<ul>
 			<li><a href="#features">Features</a></li>
 			<li><a href="#how-it-works">How It Works</a></li>
@@ -160,12 +162,22 @@
 	}
 
 	.logo {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		font-size: 1.5rem;
 		font-weight: bold;
 		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
+	}
+
+	.icon-inline {
+		width: 2em;
+		height: 2em;
+		padding-bottom: 0.2em;
+		padding-right: 0.24em;
 	}
 
 	nav ul {
