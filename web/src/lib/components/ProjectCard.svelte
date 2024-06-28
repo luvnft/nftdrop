@@ -10,7 +10,7 @@
 			<img src={project.image} alt={project.title} />
 			{#if project.mintCount !== undefined}
 				<div class="mint-count">
-					<span>{project.mintCount}</span> claimed
+					<span>{project.mintCount + (project.claimLimit ? `/${project.claimLimit}` : '')}</span> claimed
 				</div>
 			{/if}
 		</div>

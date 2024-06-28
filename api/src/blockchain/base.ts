@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import { ethers, formatEther, JsonRpcProvider } from "ethers";
-import NFTAirdropTracker from "../../../eth/artifacts/contracts/NFTAirdropTracker.sol/NFTAirdropTracker.json";
+import NFTAirdropTracker from "../../NFTAirdropTracker.json";
 import logger from "../utils/logger";
 
 const { BASE_RPC_URL, WALLET_PRIVATE_KEY, DEPLOYED_CONTRACT_ADDRESS } =

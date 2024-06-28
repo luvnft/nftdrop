@@ -29,6 +29,7 @@ export async function createProject(req: Request, res: Response) {
     tokenId,
     uid: req.user.uid,
     claimOpen: false,
+    claimLimit: 100,
   });
 
   res.send(project);

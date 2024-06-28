@@ -11,6 +11,7 @@ export interface Project {
   tokenId: string;
   uid: string;
   claimOpen: boolean;
+  claimLimit: number;
   mintCount?: number;
   existsOnChain?: boolean;
   txHash?: string;

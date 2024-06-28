@@ -18,6 +18,12 @@
 	 */
 	export let currentUser;
 
+	let claimLimitReached = false;
+
+	$: if (project.claimLimit !== undefined) {
+		claimLimitReached = project.mintCount >= project.claimLimit;
+	}
+
 	const progress = tweened(0, {
 		duration: 1000,
 		easing: cubicOut
@@ -31,12 +37,18 @@
 </script>
 
 {#if !userAlreadyMinted && !mintingComplete}
-	<button on:click={mint} class="primary-button" disabled={isMinting || !project.claimOpen}>
+	<button
+		on:click={mint}
+		class="primary-button"
+		disabled={isMinting || !project.claimOpen || claimLimitReached}
+	>
 		{#if isMinting}
 			<div class="minting-progress">
 				<div class="progress-bar" style="width: {$progress * 100}%"></div>
 			</div>
 			Minting...
+		{:else if claimLimitReached}
+			Claim limit has been reached
 		{:else if project.claimOpen}
 			Claim the free NFT
 		{:else}

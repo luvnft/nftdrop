@@ -18,10 +18,7 @@ export async function mintNFT(
   projectId: string,
   uid: string
 ): Promise<{ mintId: string; mintCount: number; mint: Mint }> {
-  const [project, userData] = await Promise.all([
-    getProject(projectId),
-    getUserData(uid),
-  ]);
+  const project = await getProject(projectId);
 
   if (!project) {
     throw new Error("Project not found");
@@ -29,6 +26,13 @@ export async function mintNFT(
 
   if (!project.claimOpen) {
     throw new Error("Claiming is not open for this project");
+  }
+
+  if (
+    project.claimLimit &&
+    project.mintCount &&
+    project.mintCount >= project.claimLimit
+  ) {
   }
 
   const claimState = await getClaimState(projectId, uid);
