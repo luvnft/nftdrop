@@ -1,5 +1,6 @@
 <script>
 	import { PUBLIC_BASE_BLOCKSCOUT_URL, PUBLIC_ZORA_CO_URL } from '$env/static/public';
+	import { getRelativeTime } from '$lib';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -13,19 +14,21 @@
 	 * @type {any[]}
 	 */
 	let projects = [];
-	let newProjectTitle = 'Midsummer';
-	let newProjectFrom = 'Nordic Traditions Collective';
-	let newProjectERC1155 = '0xa89473261cc82b9044b6a1442fdb840ad3146cdf';
-	let newProjectTokenId = '1';
-	let newProjectImage =
-		'https://remote-image.decentralized-content.com/image?url=https%3A%2F%2Fmagic.decentralized-content.com%2Fipfs%2Fbafybeie3yltt77fmf6v6vmzspkdv4hkh6sn6mj62k7nwjbqvpmpo5a26bq&w=1920&q=75';
-	let newProjectDescription = 'Capture the enchantment of Midsummer with this mystical NFT.';
+	// let newProjectTitle = 'Midsummer';
+	// let newProjectFrom = 'Nordic Traditions Collective';
+	// let newProjectERC1155 = '0xa89473261cc82b9044b6a1442fdb840ad3146cdf';
+	// let newProjectTokenId = '1';
+	// let newProjectImage =
+	// 	'https://remote-image.decentralized-content.com/image?url=https%3A%2F%2Fmagic.decentralized-content.com%2Fipfs%2Fbafybeie3yltt77fmf6v6vmzspkdv4hkh6sn6mj62k7nwjbqvpmpo5a26bq&w=1920&q=75';
+	// let newProjectDescription = 'Capture the enchantment of Midsummer with this mystical NFT.';
 
-	// let newProjectTitle = '';
-	// let newProjectFrom = '';
-	// let newProjectNftLink = '';
-	// let newProjectImage = '';
-	// let newProjectDescription = '';
+	let newProjectTitle = '';
+	let newProjectFrom = '';
+	let newProjectERC1155 = '';
+	let newProjectTokenId = '';
+	let newProjectImage = '';
+	let newProjectDescription = '';
+
 	let isCreatingProject = false;
 	let showCreateForm = false;
 	let recordAirdropInProgress = false;
@@ -213,7 +216,7 @@
 	<div class="create-project">
 		<h3>Create New Project</h3>
 		<p>
-			Before creating a project, you have to post a NFT on <a
+			Before creating a project, you have to post a NFT on Base network on <a
 				href="https://zora.co/create"
 				target="_blank"
 				class="text-link">zora.co/create</a
@@ -224,7 +227,7 @@
 			We will provide you a QR code which links to a unique claim page for your airdrop. At this
 			point, the airdrop must still be done on Zora, but it will be easy to do: just copy the
 			addresses from our site and paste them into the airdrop form on Zora. You must have created
-			the NFT on Zora to be able to airdrop.
+			the NFT on Zora to be able to airdrop and track it here.
 		</p>
 		<p>
 			The airdrop project and all claims to it will be recorded on Base and the gas fees will be
@@ -292,7 +295,9 @@
 								Total claims: {project.mintCount}
 								{#if project.latestClaimAt}
 									<br />
-									<i>Latest claim on {project.latestClaimAt}</i>
+									<i title={project.latestClaimAt}
+										>Latest claim {getRelativeTime(new Date(project.latestClaimAt))}</i
+									>
 								{/if}
 							</p>
 
@@ -319,7 +324,11 @@
 											addresses during Update
 											{#if project.lastUpdatedOnChainAt}
 												<br />
-												<i>Received airdrops last updated on {project.lastUpdatedOnChainAt}</i>
+												<i title={project.lastUpdatedOnChainAt}
+													>Received airdrops last updated {getRelativeTime(
+														new Date(project.lastUpdatedOnChainAt)
+													)}</i
+												>
 											{/if}
 										</span>
 									</label>
@@ -337,7 +346,11 @@
 											Eligible Addresses ({project.eligibleAddresses?.length ?? 0})
 											{#if project.eligibleAddressesLastUpdatedAt}
 												<br />
-												<i>Last updated at {project.eligibleAddressesLastUpdatedAt}</i>
+												<i title={project.eligibleAddressesLastUpdatedAt}
+													>Last updated {getRelativeTime(
+														new Date(project.eligibleAddressesLastUpdatedAt)
+													)}</i
+												>
 											{/if}
 										</h4>
 										<div class="eligible-addresses-actions">

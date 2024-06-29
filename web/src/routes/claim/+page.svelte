@@ -142,9 +142,9 @@
 	<div class="main-content">
 		<h1 class="gradient-text" in:fly={{ y: 20, duration: 1000 }}>
 			{#if project === null || project.claimOpen}
-				✨ You're eligible for a free NFT!
+				You're eligible for a free NFT!
 			{:else}
-				🚫 Claiming is closed for this project
+				🚫 Claiming is closed for this project 🚫
 			{/if}
 		</h1>
 

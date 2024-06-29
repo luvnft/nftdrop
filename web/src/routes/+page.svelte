@@ -22,12 +22,15 @@
 
 <main>
 	<section id="hero">
-		<h1>Collect & Share Digital Memories<br />with Ease</h1>
-		<p class="hero-text">Surprise your event visitors with a unique, ownable and tradable NFT</p>
+		<h1>Collect & Share Digital Memories with Ease</h1>
+		<p class="hero-text">
+			Mint Wave revolutionizes event experiences by seamlessly bridging physical moments to digital
+			ownership. Create, distribute, and collect unique NFT memorabilia with just a QR code scan.
+			Built on Base and Zora for lightning-fast, low-cost transactions.
+		</p>
 	</section>
 
-	<section id="features">
-		<h2>Features</h2>
+	<section id="features" style:padding="0 33px">
 		<div class="feature-grid">
 			<div class="feature-card">
 				<img src="airdrop-icon.svg" alt="Airdrop" class="icon" />
@@ -132,7 +135,6 @@
 
 <style>
 	:global(body) {
-		font-family: 'Arial', sans-serif;
 		margin: 0;
 		padding: 0;
 		background-color: var(--background-color);
@@ -229,7 +231,7 @@
 	}
 
 	section {
-		padding: 4rem 10%;
+		padding: 2rem 10%;
 	}
 
 	h1,

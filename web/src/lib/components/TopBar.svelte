@@ -23,7 +23,7 @@
 				<li>
 					<button on:click={() => setActiveSection('profile')}>Profile</button>
 				</li>
-				<li>
+				<li class="projects-button">
 					<button on:click={() => setActiveSection('projects')}>Projects</button>
 				</li>
 				<li>
@@ -111,6 +111,13 @@
 
 	.sign-out:hover {
 		opacity: 0.9;
+	}
+
+	/* Hide projects button on mobile */
+	@media (max-width: 768px) {
+		.projects-button {
+			display: none;
+		}
 	}
 
 	@media (max-width: 768px) {

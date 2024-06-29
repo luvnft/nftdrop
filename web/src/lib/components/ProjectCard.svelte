@@ -128,8 +128,14 @@
 
 	.from {
 		font-style: italic;
-		color: var(--accent-color);
+		color: var(--gradient-end);
 		margin-bottom: 0.5em;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		.from {
+			color: var(--gradient-start);
+		}
 	}
 
 	.description {

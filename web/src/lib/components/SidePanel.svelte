@@ -1,10 +1,17 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/firebase';
+	import { LOCAL_STORAGE_ACTIVE_SECTION_KEY } from '$lib/localStorage';
 </script>
 
 <div class="side-panel">
-	<button on:click={() => goto('/app')} class="secondary-button">View your profile</button>
+	<button
+		on:click={() => {
+			localStorage.setItem(LOCAL_STORAGE_ACTIVE_SECTION_KEY, 'profile');
+			goto('/app');
+		}}
+		class="secondary-button">View your profile</button
+	>
 	<button on:click={() => auth.signOut()} class="signout-button">Sign out</button>
 </div>
 

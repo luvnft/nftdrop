@@ -134,10 +134,6 @@ export async function getClaimState(
 ): Promise<ClaimState> {
   const claimStateBigInt = await contract.getClaimState(projectId, userId);
   const claimState = Number(claimStateBigInt);
-  logger.info(
-    `Claim state for user ${userId} in project ${projectId}`,
-    claimState
-  );
   return claimState;
 }
 

@@ -55,14 +55,16 @@ export async function getUserMints(uid: string): Promise<Mint[]> {
     .where("uid", "==", uid)
     .get();
 
-  const mints = userMints.docs.map(
-    (doc) =>
-      ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: doc.data().timestamp.toDate(),
-      } as unknown as Mint)
-  );
+  const mints = userMints.docs
+    .filter((doc) => doc.data().hidden !== true)
+    .map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: doc.data().timestamp.toDate(),
+        } as unknown as Mint)
+    );
 
   const mintsWithStatus = await Promise.all(
     mints.map(async (mint) => {

@@ -10,7 +10,7 @@ Project URL: [https://nft-surprise.web.app](https://nft-surprise.web.app)
 
 ## About Mint Wave
 
-Mint Wave is an NFT Airdrop Tracker that simplifies the process of creating and distributing NFT airdrops.
+Mint Wave is a NFT Airdrop Tracker that simplifies the process of creating and distributing NFT airdrops.
 
 **Key Features:**
 - Easy creation of NFT airdrops
@@ -83,7 +83,7 @@ To further develop and deploy Mint Wave, I plan to:
 1. **Enhance Airdrop Creation and Collecting**
    - Board collectors instantly on-chain with Coinbase Smart Wallets if they don't have a wallet
    - Add wallet integration with wagmi
-   - Allow the contract to mint NFTs straight to the collectors so that copy-pasting to zora.co airdrop feature is not needed
+   - Allow to mint NFTs straight to the collector's wallet so that copy-pasting to zora.co airdrop feature is not needed
    - Develop a user-friendly interface for NFT creation and customization
 
 2. **Security Audit**

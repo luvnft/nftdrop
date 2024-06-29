@@ -25,7 +25,7 @@
 	}
 
 	const progress = tweened(0, {
-		duration: 1000,
+		duration: 5000,
 		easing: cubicOut
 	});
 
@@ -57,7 +57,7 @@
 	</button>
 {:else if userAlreadyMinted}
 	<div class="minting-complete">
-		<h3>✨ Hello again {currentUser?.displayName ?? ''}!</h3>
+		<h3>Hello again {currentUser?.displayName ?? ''}!</h3>
 		<p>
 			Only 1 NFT per user can be collected and you've already collected your NFT on {formatTimestamp(
 				claimedAt
@@ -152,19 +152,21 @@
 		backdrop-filter: blur(10px);
 		border-radius: 15px;
 		margin: 2em 0;
-		padding: 2em;
+		padding: 1em 0;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		text-align: center;
 		width: 100%;
 		max-width: 500px;
 		overflow-wrap: break-word;
+		overflow: hidden;
 	}
 
 	.minting-complete h3 {
-		margin-top: 1em;
+		margin: 1em 0;
+		padding: 1em;
 	}
 
 	.minting-complete p {
-		padding: 1.5em;
+		padding: 1em;
 	}
 </style>
