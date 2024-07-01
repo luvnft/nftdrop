@@ -9,6 +9,9 @@ export interface Project {
   image: string;
   nftContractAddress: string;
   tokenId: string;
+  network: string;
+  trackerContractVersion: number;
+  trackerContractAddress: string;
   uid: string;
   claimOpen: boolean;
   claimLimit: number;

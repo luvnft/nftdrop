@@ -6,8 +6,17 @@ export async function createProject(req: Request, res: Response) {
     return res.status(401).send("Unauthorized");
   }
 
-  const { title, from, description, image, nftContractAddress, tokenId } =
-    req.body;
+  const {
+    title,
+    from,
+    description,
+    image,
+    nftContractAddress,
+    tokenId,
+    network,
+    trackerContractVersion,
+    trackerContractAddress,
+  } = req.body;
 
   if (
     !title ||
@@ -15,7 +24,10 @@ export async function createProject(req: Request, res: Response) {
     !description ||
     !image ||
     !nftContractAddress ||
-    !tokenId
+    !tokenId ||
+    !network ||
+    !trackerContractVersion ||
+    !trackerContractAddress
   ) {
     return res.status(400).send("Missing required fields");
   }
@@ -30,6 +42,9 @@ export async function createProject(req: Request, res: Response) {
     uid: req.user.uid,
     claimOpen: false,
     claimLimit: 100,
+    network,
+    trackerContractVersion,
+    trackerContractAddress,
   });
 
   res.send(project);

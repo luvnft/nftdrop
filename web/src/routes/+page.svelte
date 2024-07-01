@@ -250,12 +250,14 @@
 
 	.hero-text {
 		text-align: center;
+		margin: 0 5rem;
 	}
 
 	.feature-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 		gap: 2rem;
+		margin-top: 5rem;
 	}
 
 	.feature-card {
@@ -317,6 +319,10 @@
 	@media (max-width: 768px) {
 		nav ul {
 			display: none;
+		}
+
+		.hero-text {
+			margin: 0 2rem;
 		}
 
 		.feature-grid,

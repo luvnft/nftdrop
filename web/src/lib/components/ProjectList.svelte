@@ -1,9 +1,11 @@
 <script>
+	import EditProjectModal from './EditProjectModal.svelte';
 	import { PUBLIC_BASE_BLOCKSCOUT_URL, PUBLIC_ZORA_CO_URL } from '$env/static/public';
 	import { getRelativeTime } from '$lib';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { networksAndContracts } from '$lib/contracts';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -28,6 +30,16 @@
 	let newProjectTokenId = '';
 	let newProjectImage = '';
 	let newProjectDescription = '';
+
+	/**
+	 * @type {import("../contracts").Network}
+	 */
+	let newSelectedNetwork = 'baseMainnet';
+
+	/**
+	 * @type {null}
+	 */
+	let editingProject = null;
 
 	let isCreatingProject = false;
 	let showCreateForm = false;
@@ -58,7 +70,12 @@
 			nftContractAddress: newProjectERC1155,
 			tokenId: newProjectTokenId,
 			image: newProjectImage,
-			description: newProjectDescription
+			description: newProjectDescription,
+			network: newSelectedNetwork,
+			trackerContractVersion:
+				networksAndContracts[newSelectedNetwork].contracts.NFTAirdropTracker.latest.version,
+			trackerContractAddress:
+				networksAndContracts[newSelectedNetwork].contracts.NFTAirdropTracker.latest.address
 		});
 		if (res.status === 200) {
 			const newProject = await res.json();
@@ -68,6 +85,22 @@
 		isCreatingProject = false;
 	}
 
+	/**
+	 * @param {any} project
+	 */
+	function openEditModal(project) {
+		editingProject = project;
+	}
+
+	/**
+	 * @param {{ detail: any; }} event
+	 */
+	function handleProjectUpdate(event) {
+		const updatedProject = event.detail;
+		projects = projects.map((p) => (p.id === updatedProject.id ? updatedProject : p));
+		editingProject = null;
+	}
+
 	function resetForm() {
 		newProjectTitle = '';
 		newProjectFrom = '';
@@ -75,6 +108,8 @@
 		newProjectTokenId = '';
 		newProjectImage = '';
 		newProjectDescription = '';
+		newSelectedNetwork = 'baseMainnet';
+
 		showCreateForm = false;
 	}
 
@@ -210,30 +245,38 @@
 	}
 </script>
 
+{#if editingProject}
+	<EditProjectModal
+		project={editingProject}
+		{currentUser}
+		on:close={() => (editingProject = null)}
+		on:projectUpdated={handleProjectUpdate}
+	/>
+{/if}
+
 <div class="project-list">
 	<h2>My NFT Airdrop Projects</h2>
 
 	<div class="create-project">
 		<h3>Create New Project</h3>
 		<p>
-			Before creating a project, you have to post a NFT on Base network on <a
+			Before creating a project, you have to post a NFT on Base or Zora network on <a
 				href="https://zora.co/create"
 				target="_blank"
 				class="text-link">zora.co/create</a
-			>. This will incur a small gas fee. After you have created a NFT on Zora, you can create and
-			manage your airdrop here.
+			>. This will incur a small gas fee. After you have created a NFT on Zora.co, you can create
+			and manage your airdrop here.
 		</p>
 		<p>
 			We will provide you a QR code which links to a unique claim page for your airdrop. At this
-			point, the airdrop must still be done on Zora, but it will be easy to do: just copy the
-			addresses from our site and paste them into the airdrop form on Zora. You must have created
-			the NFT on Zora to be able to airdrop and track it here.
+			point, the airdrop must still be done on Zora.co, but it will be easy to do: just copy the
+			addresses from our site and paste them into the airdrop form on Zora.co. You must have created
+			the NFT on Zora.co (or use the same contract type) to be able to airdrop and track it here.
 		</p>
 		<p>
-			The airdrop project and all claims to it will be recorded on Base and the gas fees will be
-			covered by us. Please consider donating some ETH to the developer wallet <code
-				>0x941729C01ff11b4B25bAA4037f225BF2AE115a12</code
-			>
+			The airdrop project and all claims to it will be recorded on-chain and the gas fees will be
+			covered by us. Please consider donating some ETH to the developer wallet, on Base and/or Zora
+			networks <code>0x941729C01ff11b4B25bAA4037f225BF2AE115a12</code>
 		</p>
 		{#if !showCreateForm}
 			<button on:click={() => (showCreateForm = true)} class="btn btn-primary">
@@ -241,6 +284,15 @@
 			</button>
 		{:else}
 			<div transition:fade>
+				<div class="select-wrapper">
+					<select bind:value={newSelectedNetwork}>
+						{#each Object.entries(networksAndContracts) as [network, info]}
+							<option value={network}
+								>{info.displayName} {network === 'baseMainnet' ? '(default)' : ''}</option
+							>
+						{/each}
+					</select>
+				</div>
 				<input type="text" bind:value={newProjectTitle} placeholder="NFT Title" />
 				<input
 					type="text"
@@ -250,12 +302,12 @@
 				<input
 					type="text"
 					bind:value={newProjectERC1155}
-					placeholder="Collection of the NFT on Zora (ERC-1155 Address)"
+					placeholder="Collection of the NFT on Zora.co (ERC-1155 Address)"
 				/>
 				<input
 					type="text"
 					bind:value={newProjectTokenId}
-					placeholder="Edition number of the NFT on Zora (ERC-1155 Token ID)"
+					placeholder="Edition number of the NFT on Zora.co (ERC-1155 Token ID)"
 				/>
 				<input
 					type="text"
@@ -263,6 +315,7 @@
 					placeholder="Link to image (will be shown on this site)"
 				/>
 				<textarea bind:value={newProjectDescription} placeholder="NFT Description" />
+
 				<div class="button-group">
 					<button on:click={createProject} disabled={isCreatingProject} class="btn btn-primary">
 						{isCreatingProject ? 'Creating...' : 'Create NFT Airdrop'}
@@ -456,6 +509,11 @@
 								{project.claimOpen ? 'Disable claim' : 'Allow claim'}
 							</button>
 							{#if !project.existsOnChain}
+								{#if !project.existsOnChain}
+									<button on:click={() => openEditModal(project)} class="btn btn-secondary">
+										Edit Project
+									</button>
+								{/if}
 								<button
 									disabled={recordAirdropInProgress}
 									on:click={() => recordAirdropOnChain(project.id)}
@@ -715,5 +773,44 @@
 
 	.address:last-child {
 		border-bottom: none;
+	}
+
+	.select-wrapper {
+		position: relative;
+		margin-bottom: 1rem;
+	}
+
+	.select-wrapper::after {
+		content: '\25BC';
+		position: absolute;
+		top: 50%;
+		right: 15px;
+		transform: translateY(-50%);
+		pointer-events: none;
+		color: var(--accent-color);
+	}
+
+	select {
+		width: 100%;
+		padding: 0.75rem;
+		padding-right: 30px;
+		border-radius: 8px;
+		border: 1px solid var(--accent-color);
+		background: rgba(255, 255, 255, 0.1);
+		color: var(--text-color);
+		font-size: 1rem;
+		appearance: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		cursor: pointer;
+	}
+
+	select::-ms-expand {
+		display: none;
+	}
+
+	select:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px var(--accent-color);
 	}
 </style>

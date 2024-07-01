@@ -1,0 +1,16 @@
+Developing Mint Wave presented several unique challenges, pushing me to expand my skills and find creative solutions:
+
+1. **Learning Curve with Blockchain Technology**: 
+   As a traditional web developer with 5 years of full-stack experience, writing smart contracts with Solidity and deploying them on the blockchain was entirely new to me. Changes between the Sepolia and mainnet implementations of zora.co on Base made it extra confusing. I used online resources, and AI tools like Claude to quickly grasp relevant concepts and smart contract deployment processes. 
+
+2. **Optimizing Gas Costs and On-Chain Data**: 
+   Minimizing blockchain interactions and stored data to reduce potential gas costs seemed like a crucial task. I tried to adopt a minimalistic approach to on-chain data storage, consulted AI for optimization strategies, and implemented efficient data structures in the smart contract.
+
+3. **Integrating Web2 and Web3 Technologies**: 
+   Connecting a Node.js server with Firebase Auth and Firestore was simple as always, but the blockchain interactions via ethers.js was something I hadn't done before. I developed a streamlined architecture where the server acts as a secure bridge, verifying requests with Firebase Auth and interacting with both Firestore and the blockchain as needed, abstracting the complexity of blockchain interactions away from the end user.
+
+4. **User-Friendly NFT Claiming Process**: 
+   Creating an accessible system for users unfamiliar with blockchain technology was challenging. I implemented a QR code-based claim system simplifying the process for users without requiring immediate wallet integration.
+
+5. **Time Constraints and Scope Management**: 
+   With only 8 days for implementation after taking too long to come up with a project idea, planning and time management became critical. I prioritized core functionalities, leveraged my web development experience, and used generative AI tools to accelerate development and problem-solving.

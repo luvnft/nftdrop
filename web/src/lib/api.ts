@@ -94,10 +94,35 @@ export function createProject(
 		image: string;
 		nftContractAddress: string;
 		tokenId: string;
+		network: string;
+		trackerContractAddress: string;
+		trackerContractVersion: number;
 	}
 ) {
 	return fetch(`${PUBLIC_API_BASE_URL}/project`, {
 		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `${token}`
+		},
+		body: JSON.stringify(project)
+	});
+}
+
+export function updateProject(
+	token: string,
+	projectId: string,
+	project: {
+		title: string;
+		from: string;
+		description: string;
+		image: string;
+		nftContractAddress: string;
+		tokenId: string;
+	}
+) {
+	return fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}`, {
+		method: 'PATCH',
 		headers: {
 			'Content-Type': 'application/json',
 			Authorization: `${token}`
