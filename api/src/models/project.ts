@@ -78,4 +78,5 @@ export async function updateProjectMintCount(
 
 export async function updateProject(projectId: string, data: any) {
   await firestore.doc(`projects/${projectId}`).update(data);
+  return data;
 }

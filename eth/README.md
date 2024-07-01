@@ -30,6 +30,18 @@ npx hardhat run scripts/deploy.ts --network base_sepolia
 npx hardhat run scripts/deploy.ts --network base_mainnet
 ```
 
+## Zora Testnet Deployment
+
+```shell
+npx hardhat run scripts/deploy.ts --network zora_sepolia
+```
+
+## Zora Mainnet Deployment
+
+```shell
+npx hardhat run scripts/deploy.ts --network zora_mainnet
+```
+
 ## Hardhat
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.

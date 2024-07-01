@@ -119,6 +119,9 @@ export function updateProject(
 		image: string;
 		nftContractAddress: string;
 		tokenId: string;
+		network: string;
+		trackerContractAddress: string;
+		trackerContractVersion: number;
 	}
 ) {
 	return fetch(`${PUBLIC_API_BASE_URL}/project/${projectId}`, {

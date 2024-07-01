@@ -50,6 +50,58 @@ export async function createProject(req: Request, res: Response) {
   res.send(project);
 }
 
+export async function updateProject(req: Request, res: Response) {
+  if (!req.user) {
+    return res.status(401).send("Unauthorized");
+  }
+
+  const { projectId } = req.params;
+
+  if (!projectId) {
+    return res.status(400).send("projectId is required");
+  }
+
+  const {
+    title,
+    from,
+    description,
+    image,
+    nftContractAddress,
+    tokenId,
+    network,
+    trackerContractVersion,
+    trackerContractAddress,
+  } = req.body;
+
+  if (
+    !title ||
+    !from ||
+    !description ||
+    !image ||
+    !nftContractAddress ||
+    !tokenId ||
+    !network ||
+    !trackerContractVersion ||
+    !trackerContractAddress
+  ) {
+    return res.status(400).send("Missing required fields");
+  }
+
+  const project = await projectService.updateProject(projectId, {
+    title,
+    from,
+    description,
+    image,
+    nftContractAddress,
+    tokenId,
+    network,
+    trackerContractVersion,
+    trackerContractAddress,
+  });
+
+  res.send(project);
+}
+
 export async function getProjects(req: Request, res: Response) {
   if (!req.user) {
     return res.status(401).send("Unauthorized");

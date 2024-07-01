@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/", verifyToken, projectController.getProjects);
 router.post("/", verifyToken, projectController.createProject);
 router.get("/:projectId", projectController.getProject);
+router.patch("/:projectId", verifyToken, projectController.updateProject);
 router.get("/:projectId/canMint", verifyToken, projectController.canMint);
 router.get(
   "/:projectId/airdropStatus",

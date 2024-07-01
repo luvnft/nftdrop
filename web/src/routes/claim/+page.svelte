@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { fly } from 'svelte/transition';
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { auth } from '$lib/firebase';

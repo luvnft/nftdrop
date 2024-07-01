@@ -86,18 +86,18 @@ To further develop and deploy Mint Wave, I plan to:
    - Allow to mint NFTs straight to the collector's wallet so that copy-pasting to zora.co airdrop feature is not needed
    - Develop a user-friendly interface for NFT creation and customization
 
-2. **Security Audit**
-   - Conduct a thorough security audit of smart contract and application code
-   - Implement any necessary security enhancements
-
-3. **Real-World Testing and Mainnet deployment**
-   - Conduct a pilot airdrop on the Base mainnet with a small community
-   - Add support for Zora mainnet and deploying the contract on Zora network
+2. **Real-World Testing**
+   - Conduct a pilot airdrop on the Base mainnet with a small community or event
+   - Deploy the contract on Zora network and support selecting either Base or Zora network for airdrop projects
    - Gather feedback and iterate on the user experience
 
-4. **Documentation and Community Building**
+3. **Documentation and Community Building**
    - Create comprehensive user and developer documentation
    - Establish community channels for support and feedback
+
+4. **Security Audit**
+   - Conduct a thorough security audit of smart contract and application code
+   - Implement any necessary security enhancements
 
 5. **Finalize Project Branding**
    - Decide on the official project name

@@ -1,11 +1,13 @@
 <script>
+	// @ts-nocheck
+
 	import EditProjectModal from './EditProjectModal.svelte';
 	import { PUBLIC_BASE_BLOCKSCOUT_URL, PUBLIC_ZORA_CO_URL } from '$env/static/public';
 	import { getRelativeTime } from '$lib';
 	import * as api from '$lib/api';
+	import { networksAndContracts } from '$lib/contracts';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { networksAndContracts } from '$lib/contracts';
 
 	/**
 	 * @type {import("@firebase/auth").User}
@@ -99,6 +101,7 @@
 		const updatedProject = event.detail;
 		projects = projects.map((p) => (p.id === updatedProject.id ? updatedProject : p));
 		editingProject = null;
+		fetchProjects();
 	}
 
 	function resetForm() {
@@ -222,7 +225,7 @@
 						(project.eligibleAddresses.length > 1
 							? `${project.eligibleAddresses.length} wallet addresses copied to clipboard!`
 							: 'One wallet address copied to clipboard!') +
-							'\n\nTo airdrop the NFTs: Go to your NFT page on Zora -> Select Manage settings -> Airdrop -> Paste the addresses in the text box -> Click Airdrop. Please double check that the contract address and token ID match with this project before airdropping. Otherwise we cannot track the airdrops on Base.\n\nAfter airdropping, come back here and click the refresh button to update the airdrop status on chain.'
+							'\n\nTo airdrop the NFTs: Go to your NFT page on Zora -> Select Manage settings -> Airdrop -> Paste the addresses in the text box -> Click Airdrop. Please double check that the network, contract address and token ID match with this project before airdropping. Otherwise we cannot track the airdrops on-chain.\n\nAfter airdropping, come back here and click the refresh button to update the airdrop status on chain.'
 					)
 				)
 				.catch((err) => console.error('Failed to copy addresses:', err));
@@ -284,7 +287,7 @@
 			</button>
 		{:else}
 			<div transition:fade>
-				<div class="select-wrapper">
+				<!-- <div class="select-wrapper">
 					<select bind:value={newSelectedNetwork}>
 						{#each Object.entries(networksAndContracts) as [network, info]}
 							<option value={network}
@@ -292,7 +295,7 @@
 							>
 						{/each}
 					</select>
-				</div>
+				</div> -->
 				<input type="text" bind:value={newProjectTitle} placeholder="NFT Title" />
 				<input
 					type="text"
@@ -479,18 +482,26 @@
 							{/if}
 						{/if}
 						<p class="claim-status">
-							{project.existsOnChain
-								? 'This airdrop project has been recorded on Base'
-								: 'This airdrop project has not been recorded on Base yet. You have to record the project on Base before allowing claim is possible.'}
-							{#if project.txHash}
-								<br />
-								<a
-									class="text-link"
-									href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${project.txHash}`}
-									target="_blank"
-									rel="noopener noreferrer"><i>View on Blockscout</i></a
-								>
+							{#if project.existsOnChain}
+								This airdrop project has been recorded on-chain
+								{#if project.txHash}
+									<br />
+									<a
+										class="text-link"
+										href={`${PUBLIC_BASE_BLOCKSCOUT_URL}/tx/${project.txHash}`}
+										target="_blank"
+										rel="noopener noreferrer"><i>View on Blockscout</i></a
+									>
+								{/if}
+							{:else}
+								This airdrop project has not been recorded on-chain yet. You have to record the
+								project on-chain before it can be claimed.
 							{/if}
+						</p>
+						<p class="claim-status">
+							Network: {networksAndContracts[project.network]?.displayName}
+							<br />
+							NFTAirdropTracker v{project.trackerContractVersion}
 						</p>
 						<div class="project-actions">
 							<a href="/claim/?id={project.id}" class="btn btn-primary">View Claim Page</a>
@@ -519,7 +530,7 @@
 									on:click={() => recordAirdropOnChain(project.id)}
 									class="btn btn-tertiary"
 								>
-									Record Airdrop on Base
+									Record Airdrop on-chain
 								</button>
 							{/if}
 						</div>
@@ -775,7 +786,7 @@
 		border-bottom: none;
 	}
 
-	.select-wrapper {
+	/* .select-wrapper {
 		position: relative;
 		margin-bottom: 1rem;
 	}
@@ -812,5 +823,5 @@
 	select:focus {
 		outline: none;
 		box-shadow: 0 0 0 2px var(--accent-color);
-	}
+	} */
 </style>

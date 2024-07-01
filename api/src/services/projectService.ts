@@ -1,13 +1,4 @@
-import {
-  getProject,
-  Project,
-  updateProjectMintCount,
-  getProjectsForUser,
-  addProject,
-  updateProjectClaimOpen,
-  updateProjectOnchain,
-  updateProject,
-} from "../models/project";
+import * as model from "../models/project";
 import { getUserMint } from "../models/mint";
 import { getUserData } from "../models/user";
 import {
@@ -19,11 +10,17 @@ import {
 import logger from "../utils/logger";
 import { Timestamp } from "firebase-admin/firestore";
 
-export async function createProject(project: Project): Promise<Project> {
-  return await addProject(project);
+export async function createProject(
+  project: model.Project
+): Promise<model.Project> {
+  return await model.addProject(project);
 }
 
-function formatProject(project: Project) {
+export async function updateProject(projectId: string, data: any) {
+  return await model.updateProject(projectId, data);
+}
+
+function formatProject(project: model.Project) {
   return {
     ...project,
     latestClaimAt: project.latestClaimAt?.toDate().toISOString(),
@@ -35,7 +32,7 @@ function formatProject(project: Project) {
 }
 
 export async function getProjects(uid: string): Promise<any[]> {
-  const projects = await getProjectsForUser(uid);
+  const projects = await model.getProjectsForUser(uid);
   const projectInfoPromises = projects.map(async (project) => {
     const projectExistsOnChain = project.id
       ? await doesProjectExistOnChain(project.id)
@@ -50,8 +47,8 @@ export async function getProjects(uid: string): Promise<any[]> {
 
 export async function getProjectInfo(
   projectId: string
-): Promise<Project | null> {
-  return getProject(projectId);
+): Promise<model.Project | null> {
+  return model.getProject(projectId);
 }
 
 export async function canUserMint(projectId: string, uid: string) {
@@ -78,7 +75,7 @@ export async function getAirdropStatus(
   projectId: string,
   updateOnChain: boolean
 ) {
-  const project = await getProject(projectId);
+  const project = await model.getProject(projectId);
   if (!project) {
     throw new Error("Project not found");
   }
@@ -124,7 +121,7 @@ export async function getAirdropStatus(
 }
 
 export async function createProjectOnChain(projectId: string) {
-  const project = await getProject(projectId);
+  const project = await model.getProject(projectId);
   if (!project) {
     throw new Error("Project not found");
   }
@@ -143,7 +140,10 @@ export async function createProjectOnChain(projectId: string) {
   if (!transactionResult.success) {
     throw new Error("Failed to record project on blockchain");
   }
-  await updateProjectOnchain(projectId, transactionResult.transactionHash);
+  await model.updateProjectOnchain(
+    projectId,
+    transactionResult.transactionHash
+  );
   return { txHash: transactionResult.transactionHash };
 }
 
@@ -155,9 +155,9 @@ export async function updateClaimOpen(projectId: string, claimOpen: boolean) {
     }
   }
 
-  return updateProjectClaimOpen(projectId, claimOpen);
+  return model.updateProjectClaimOpen(projectId, claimOpen);
 }
 
 export async function updateMintCount(projectId: string, mintCount: number) {
-  return updateProjectMintCount(projectId, mintCount);
+  return model.updateProjectMintCount(projectId, mintCount);
 }

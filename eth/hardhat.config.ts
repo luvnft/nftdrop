@@ -25,6 +25,13 @@ const config: HardhatUserConfig = {
         : [],
       chainId: 999999999,
     },
+    base_mainnet: {
+      url: "https://api.developer.coinbase.com/rpc/v1/base/hvla5h8gm-vJOii6BHRjyyYljKQ7se58", //"https://mainnet.base.org",
+      accounts: process.env.WALLET_PRIVATE_KEY
+        ? [process.env.WALLET_PRIVATE_KEY]
+        : [],
+      chainId: 8453,
+    },
   },
 };
 
