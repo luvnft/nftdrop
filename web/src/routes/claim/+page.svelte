@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { fly } from 'svelte/transition';
 	import { PUBLIC_API_BASE_URL } from '$env/static/public';
-	import { auth } from '$lib/firebase';
+	import { auth, checkEmailLink } from '$lib/firebase';
 	import BackgroundCanvas from '$lib/components/BackgroundCanvas.svelte';
 	import AuthButtons from '$lib/components/AuthButtons.svelte';
 	import MintButton from '$lib/components/MintButton.svelte';
@@ -89,6 +89,8 @@
 		} else {
 			console.error('Error fetching project', res);
 		}
+
+		await checkEmailLink(auth);
 	});
 
 	/**
@@ -141,7 +143,7 @@
 <div class="container">
 	<div class="main-content">
 		<h1 class="gradient-text" in:fly={{ y: 20, duration: 1000 }}>
-			{#if project === null || project.claimOpen}
+			{#if project === null || project?.claimOpen}
 				You're eligible for a free NFT!
 			{:else}
 				🚫 Claiming is closed for this project 🚫
@@ -150,7 +152,7 @@
 
 		{#if authInitialised && currentUser && !userAlreadyMinted}
 			<p class="welcome-text" in:fly={{ y: -20, duration: 1000 }}>
-				Welcome, {currentUser.displayName},
+				Welcome, {currentUser.displayName ?? currentUser.email},
 				{#if project?.claimOpen}
 					you're all set to mint your unique collectible.
 				{:else}
@@ -158,7 +160,15 @@
 				{/if}
 			</p>
 		{:else if authInitialised && !userAlreadyMinted}
-			<AuthButtons claimOpen={project.claimOpen} />
+			{#if project?.claimOpen}
+				<p>Please identify yourself to mint your unique collectible!</p>
+			{:else}
+				<p>
+					Claiming is closed for this project but you can still sign in to make your next claim
+					easier!
+				</p>
+			{/if}
+			<AuthButtons />
 		{/if}
 
 		<ProjectCard {project} />

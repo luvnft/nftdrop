@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { auth } from '$lib/firebase';
+	import { auth, checkEmailLink } from '$lib/firebase';
 	import { fly } from 'svelte/transition';
 	import BackgroundCanvas from '$lib/components/BackgroundCanvas.svelte';
 	import AuthButtons from '$lib/components/AuthButtons.svelte';
@@ -22,17 +22,19 @@
 	 */
 	let airdropWalletAddress = null;
 
+	auth.onAuthStateChanged(async (user) => {
+		currentUser = user;
+		airdropWalletAddress = await getUserAirdropAddress(currentUser);
+		authInitialised = true;
+	});
+
 	onMount(async () => {
 		const storedSection = localStorage.getItem(LOCAL_STORAGE_ACTIVE_SECTION_KEY);
 		if (storedSection) {
 			activeSection = storedSection;
 		}
 
-		auth.onAuthStateChanged(async (user) => {
-			currentUser = user;
-			airdropWalletAddress = await getUserAirdropAddress(currentUser);
-			authInitialised = true;
-		});
+		await checkEmailLink(auth);
 	});
 
 	/**
@@ -73,7 +75,7 @@
 		{:else}
 			<div class="auth-container" in:fly={{ y: 20, duration: 500 }}>
 				<h1 class="gradient-text">Welcome to Mint Wave</h1>
-				<p>Sign in to start creating and managing your NFT projects.</p>
+				<p>Sign in to track your collected NFTs or create and manage NFT airdrop projects.</p>
 				<AuthButtons />
 			</div>
 		{/if}

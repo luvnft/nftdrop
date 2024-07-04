@@ -37,8 +37,12 @@
 
 <div class="user-details">
 	<h2>User Profile</h2>
-	<p><strong>Email:</strong> {currentUser.email}</p>
-	<p><strong>Name:</strong> {currentUser.displayName}</p>
+	{#if currentUser.email}
+		<p><strong>Email:</strong> {currentUser.email}</p>
+	{/if}
+	{#if currentUser.displayName}
+		<p><strong>Name:</strong> {currentUser.displayName}</p>
+	{/if}
 
 	<p>
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
