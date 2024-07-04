@@ -59,7 +59,7 @@
 	<div class="minting-complete">
 		<h3>Hello again {currentUser?.displayName ?? ''}!</h3>
 		<p>
-			Only 1 NFT per user can be collected and you've already collected your NFT on {formatTimestamp(
+			Only 1 NFT per user can be claimed and you've already claimed your NFT on {formatTimestamp(
 				claimedAt
 			)}.
 			{#if project.recordClaimTxHash}
@@ -72,7 +72,8 @@
 			{/if}
 		</p>
 		{#if !airdropWalletAddress}
-			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
+			<p>No wallet linked for airdrop</p>
+			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} autoSubmit={true} />
 		{:else if mint.baseClaimState === 2}
 			<p>We have already airdropped the NFT to your wallet</p>
 		{:else}

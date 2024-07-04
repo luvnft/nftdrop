@@ -12,6 +12,7 @@
 	import SidePanel from '$lib/components/SidePanel.svelte';
 	import { createMint } from '$lib/api';
 	import { getUserAirdropAddress, LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY } from '$lib/localStorage';
+	import { initWagmi } from '$lib/wagmi';
 
 	let authInitialised = false;
 	/**
@@ -91,6 +92,8 @@
 		}
 
 		await checkEmailLink(auth);
+
+		await initWagmi();
 	});
 
 	/**

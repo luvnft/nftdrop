@@ -10,6 +10,7 @@
 	import NftGallery from '$lib/components/NFTGallery.svelte';
 	import Loader from '$lib/components/Loader.svelte';
 	import { getUserAirdropAddress, LOCAL_STORAGE_ACTIVE_SECTION_KEY } from '$lib/localStorage';
+	import { initWagmi } from '$lib/wagmi';
 
 	/**
 	 * @type {import("@firebase/auth").User | null}
@@ -35,6 +36,8 @@
 		}
 
 		await checkEmailLink(auth);
+
+		await initWagmi();
 	});
 
 	/**

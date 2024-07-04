@@ -33,3 +33,35 @@ export function getRelativeTime(d1: Date, d2 = new Date()) {
 		if (Math.abs(elapsed) > value || unit == 'second')
 			return rtf.format(Math.round(elapsed / value), unit as Intl.RelativeTimeFormatUnit);
 }
+
+export function measureSize(node: Element) {
+	let observer: ResizeObserver;
+	let size = { width: 0, height: 0 };
+
+	function updateSize() {
+		const newSize = node.getBoundingClientRect();
+		if (newSize.width !== size.width || newSize.height !== size.height) {
+			size = { width: newSize.width, height: newSize.height };
+			node.dispatchEvent(new CustomEvent('size', { detail: size }));
+		}
+	}
+
+	updateSize(); // Initial measurement
+
+	if (typeof ResizeObserver !== 'undefined') {
+		observer = new ResizeObserver(updateSize);
+		observer.observe(node);
+	} else {
+		window.addEventListener('resize', updateSize);
+	}
+
+	return {
+		destroy() {
+			if (observer) {
+				observer.disconnect();
+			} else {
+				window.removeEventListener('resize', updateSize);
+			}
+		}
+	};
+}

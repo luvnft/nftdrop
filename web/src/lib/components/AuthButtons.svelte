@@ -43,10 +43,6 @@
 		}
 	}
 
-	async function signInWithEthereum() {
-		// TODO: Implement Ethereum sign-in
-	}
-
 	function resetView() {
 		showEmailInput = false;
 		email = '';
@@ -61,9 +57,7 @@
 		<button on:click={() => (showEmailInput = true)} class="auth-button email">
 			Sign in with Email
 		</button>
-		<button disabled={true} on:click={signInWithEthereum} class="auth-button ethereum">
-			Sign in with Ethereum
-		</button>
+		<!-- <CreateWalletButton /> -->
 	{:else}
 		<div class="email-input-container">
 			<input
@@ -103,7 +97,7 @@
 		margin-bottom: 4em;
 	}
 
-	.auth-button {
+	:global(.auth-button) {
 		width: 100%;
 		display: flex;
 		align-items: center;
@@ -130,10 +124,6 @@
 	}
 	.auth-button.email {
 		background-color: #4285f4;
-		color: white;
-	}
-	.auth-button.ethereum {
-		background-color: #3c3c3d;
 		color: white;
 	}
 	.auth-button.cancel {

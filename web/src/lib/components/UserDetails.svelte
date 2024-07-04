@@ -1,5 +1,4 @@
 <script>
-	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { fetchUserData } from '$lib/api';
 	import { LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY } from '$lib/localStorage';
 	import EthereumWalletInput from './EthereumWalletInput.svelte';
@@ -57,30 +56,15 @@
 			<button on:click={() => (isEditingWallet = true)}>Edit</button>
 		{:else if isEditingWallet}
 			<p>{airdropWalletAddress}</p>
-			<EthereumWalletInput on:walletAddressSubmitted={updateWalletAddress} hideInfo={true} />
+			<EthereumWalletInput
+				on:walletAddressSubmitted={updateWalletAddress}
+				hideInfo={true}
+				storedWalletAddress={airdropWalletAddress}
+			/>
 			<button style:margin-top="2em" on:click={() => (isEditingWallet = false)}>Cancel</button>
 		{:else}
-			<p>No wallet linked</p>
-			<p>
-				A wallet compatible with the Base network is required to receive the NFTs. If you don't have
-				one yet, we suggest using <a
-					href="https://www.coinbase.com/wallet"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="wallet-link">Coinbase Wallet</a
-				>,
-				<a href="https://metamask.io/" target="_blank" rel="noopener noreferrer" class="wallet-link"
-					>Metamask</a
-				>
-				or
-				<a
-					href="https://brave.com/wallet/"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="wallet-link">Brave Wallet</a
-				>.
-			</p>
-			<button on:click={() => (isEditingWallet = true)}>Link Wallet</button>
+			<p>No wallet linked for airdrop</p>
+			<EthereumWalletInput on:walletAddressSubmitted={updateWalletAddress} />
 		{/if}
 	</div>
 </div>
@@ -106,18 +90,6 @@
 
 	.wallet-section {
 		margin-top: 2rem;
-	}
-
-	.wallet-link {
-		font-weight: 600;
-		color: var(--accent-color);
-		text-decoration: none;
-		transition: color 0.2s ease;
-	}
-
-	.wallet-link:hover {
-		color: var(--gradient-end);
-		text-decoration: underline;
 	}
 
 	button {

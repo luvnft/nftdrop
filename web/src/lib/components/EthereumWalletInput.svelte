@@ -4,10 +4,21 @@
 	import { auth } from '$lib/firebase';
 	import { setUserWallet } from '$lib/api';
 	import { LOCAL_STORAGE_USER_AIRDROP_ADDRESS_KEY } from '$lib/localStorage';
+	import { connected as wagmiConnected } from 'svelte-wagmi';
+	import WalletOptions from './WalletOptions.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let hideInfo = false;
+
+	export let autoSubmit = false;
+
+	export let storedWalletAddress = '';
+
+	/**
+	 * @type {{ address: string; type: string; } | null}
+	 */
+	let connectedWallet = null;
 
 	let walletAddress = '';
 	let isValid = false;
@@ -19,13 +30,17 @@
 	 * @param {string} address
 	 */
 	function validateEthereumAddress(address) {
-		// Basic Ethereum address validation
 		return /^0x[a-fA-F0-9]{40}$/.test(address);
 	}
 
 	function handleInput() {
 		isValid = validateEthereumAddress(walletAddress);
 		errorMessage = isValid ? '' : 'Please enter a valid Ethereum wallet address';
+
+		if (storedWalletAddress && walletAddress === storedWalletAddress) {
+			isValid = false;
+			errorMessage = 'This wallet address is already linked to your account';
+		}
 	}
 
 	async function submitWalletAddress() {
@@ -62,32 +77,34 @@
 			isSubmitting = false;
 		}
 	}
+
+	/**
+	 * @param {{ detail: { address: any; type: any; }; }} event
+	 */
+	async function handleWalletConnected(event) {
+		const { address, type } = event.detail;
+		connectedWallet = { address, type };
+		console.log(`Wallet connected: ${address} (${type})`);
+		walletAddress = address;
+		handleInput();
+		if (autoSubmit) await submitWalletAddress();
+	}
+
+	function handleWalletDisconnected() {
+		connectedWallet = null;
+		console.log('Wallet disconnected');
+	}
 </script>
 
-{#if !hideInfo}
-	<p>
-		Your NFT is still in our custody. Please add your wallet address here, so we know where to
-		airdrop the NFT. Don't worry if you can't do this right away, we will try our best to keep it
-		safe for you.
-	</p>
-	<p>
-		A wallet compatible with the Base network is required. If you don't have one, we suggest using <a
-			href="https://www.coinbase.com/wallet"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="wallet-link">Coinbase Wallet</a
-		>,
-		<a href="https://metamask.io/" target="_blank" rel="noopener noreferrer" class="wallet-link"
-			>Metamask</a
-		>
-		or
-		<a
-			href="https://brave.com/wallet/"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="wallet-link">Brave Wallet</a
-		>.
-	</p>
+<WalletOptions
+	on:walletConnected={handleWalletConnected}
+	on:walletDisconnected={handleWalletDisconnected}
+/>
+
+{#if !connectedWallet && !$wagmiConnected}
+	<div class="divider">
+		<span>or</span>
+	</div>
 {/if}
 
 <div class="wallet-input-container">
@@ -95,10 +112,10 @@
 		type="text"
 		bind:value={walletAddress}
 		on:input={handleInput}
-		placeholder="Enter your Ethereum wallet address"
+		placeholder="Enter your wallet address"
 		class:invalid={!isValid && walletAddress !== ''}
 	/>
-	<button on:click={submitWalletAddress} disabled={!isValid || isSubmitting}>
+	<button on:click={submitWalletAddress} disabled={!isValid || isSubmitting} class="submit-button">
 		{#if isSubmitting}
 			Submitting...
 		{:else}
@@ -119,12 +136,59 @@
 	</p>
 {/if}
 
+{#if !hideInfo}
+	<div class="wallet-info-container">
+		<p>
+			Your NFT will be sent to the linked wallet address. You can easily create a new Coinbase
+			wallet with passkeys, connect an existing one, or manually enter your address. If you're not
+			ready to do this now, don't worry - your claim has been saved and linked to your sign-in
+			details, and you can fill this later in your profile.
+		</p>
+		<p>
+			A wallet compatible with the <a
+				href="https://www.base.org/"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="wallet-link">Base network</a
+			>
+			is required. You can read more about
+			<a
+				href="https://wallet.coinbase.com/"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="wallet-link">Coinbase Wallet here.</a
+			>
+		</p>
+	</div>
+{/if}
+
 <style>
+	.divider {
+		display: flex;
+		align-items: center;
+		text-align: center;
+		margin: 1em 2.5em;
+	}
+
+	.divider::before,
+	.divider::after {
+		content: '';
+		flex: 1;
+		border-bottom: 1px solid #ccc;
+	}
+
+	.divider span {
+		padding: 0 10px;
+		color: #888;
+		font-size: 0.9em;
+	}
+
 	.wallet-input-container {
 		display: flex;
 		flex-direction: column;
-		margin-top: 1em;
-		max-width: 100%;
+		align-items: center;
+		margin: 1em 0;
+		padding: 1em 2em;
 	}
 
 	input {
@@ -147,17 +211,25 @@
 	}
 
 	button {
-		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
-		color: white;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5em;
 		padding: 0.8em 1.5em;
 		border: none;
 		border-radius: 25px;
-		font-size: 1rem;
 		font-weight: bold;
 		cursor: pointer;
-		transition: opacity 0.3s ease;
-		margin-top: 1em;
-		width: 100%;
+		transition:
+			transform 0.2s,
+			box-shadow 0.2s;
+		font-size: 1rem;
+	}
+
+	.submit-button {
+		background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+		color: white;
 	}
 
 	button:disabled {
@@ -166,7 +238,13 @@
 	}
 
 	button:hover:not(:disabled) {
-		opacity: 0.9;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.wallet-info-container {
+		padding: 1em;
+		margin: 0em auto;
 	}
 
 	.error-message {
@@ -195,14 +273,13 @@
 			flex-direction: row;
 		}
 
-		input {
+		.wallet-input-container input {
 			border-radius: 25px 0 0 25px;
 			border-right: none;
 		}
 
-		button {
+		.wallet-input-container button {
 			border-radius: 0 25px 25px 0;
-			margin-top: 0;
 			width: auto;
 		}
 	}
