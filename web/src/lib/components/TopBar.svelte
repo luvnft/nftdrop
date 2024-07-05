@@ -13,7 +13,7 @@
 	}
 </script>
 
-<header>
+<header id="mintwave-header">
 	<nav>
 		<div class="logo">
 			<img src="../mintwave.svg" alt="Mint Wave" class="icon-inline" />Mint Wave

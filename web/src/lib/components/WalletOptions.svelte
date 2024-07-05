@@ -9,6 +9,8 @@
 	} from 'svelte-wagmi';
 	import CoinbaseWalletLogo from './CoinbaseWalletLogo.svelte';
 
+	export let disabled = false;
+
 	let sdk;
 	/** @type {import("@coinbase/wallet-sdk").ProviderInterface} */
 	let provider;
@@ -45,6 +47,8 @@
 
 	async function connectExistingWallet() {
 		isConnecting = true;
+		const appHeader = document.getElementById('mintwave-header');
+		if (appHeader) appHeader.style.display = 'none';
 		try {
 			await WC();
 			dispatch('walletConnected', { address: $wagmiSignerAddress, type: 'other' });
@@ -52,6 +56,7 @@
 			console.error('Failed to connect wallet via wagmi:', error);
 		} finally {
 			isConnecting = false;
+			if (appHeader) appHeader.style.display = '';
 		}
 	}
 
@@ -73,7 +78,7 @@
 		<button
 			on:click={connectCoinbaseWallet}
 			class="auth-button create-wallet"
-			disabled={isConnecting}
+			disabled={isConnecting || disabled}
 		>
 			<CoinbaseWalletLogo />
 			{isConnecting ? 'Connecting...' : 'Create Coinbase Wallet'}
@@ -81,12 +86,16 @@
 		<button
 			on:click={connectExistingWallet}
 			class="auth-button connect-wallet"
-			disabled={isConnecting}
+			disabled={isConnecting || disabled}
 		>
 			{isConnecting ? 'Connecting...' : 'Connect Existing Wallet'}
 		</button>
 	{:else}
-		<button on:click={disconnectWallet} class="auth-button disconnect-wallet">
+		<button
+			on:click={disconnectWallet}
+			class="auth-button disconnect-wallet"
+			disabled={isConnecting || disabled}
+		>
 			Disconnect Wallet
 		</button>
 	{/if}

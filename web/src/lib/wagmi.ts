@@ -1,6 +1,6 @@
 import { defaultConfig } from 'svelte-wagmi';
 import { base } from '@wagmi/core/chains';
-import { coinbaseWallet } from '@wagmi/connectors';
+import { coinbaseWallet, injected, walletConnect } from '@wagmi/connectors';
 import { PUBLIC_WALLETCONNECT_ID } from '$env/static/public';
 
 export const initWagmi = () => {
@@ -8,14 +8,17 @@ export const initWagmi = () => {
 		appName: 'Mint Wave',
 		chains: [base],
 		connectors: [
+			injected(),
+			walletConnect({
+				projectId: PUBLIC_WALLETCONNECT_ID,
+				showQrModal: false
+			}),
 			coinbaseWallet({
 				appName: 'Mint Wave',
-				preference: 'smartWalletOnly'
+				preference: 'all'
 			})
 		],
 		autoConnect: true,
-		// If you need to use Alchemy or WalletConnect, add their IDs here
-		// alchemyId: import.meta.env.VITE_ALCHEMY_ID,
 		walletConnectProjectId: PUBLIC_WALLETCONNECT_ID
 	});
 

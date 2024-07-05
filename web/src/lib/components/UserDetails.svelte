@@ -79,6 +79,12 @@
 		margin: 0 auto;
 	}
 
+	@media (max-width: 600px) {
+		.user-details {
+			width: 77vw;
+		}
+	}
+
 	h2,
 	h3 {
 		color: var(--accent-color);

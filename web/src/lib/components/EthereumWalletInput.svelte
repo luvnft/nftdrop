@@ -37,7 +37,11 @@
 		isValid = validateEthereumAddress(walletAddress);
 		errorMessage = isValid ? '' : 'Please enter a valid Ethereum wallet address';
 
-		if (storedWalletAddress && walletAddress === storedWalletAddress) {
+		if (
+			storedWalletAddress &&
+			walletAddress &&
+			walletAddress.toLowerCase() === storedWalletAddress.toLowerCase()
+		) {
 			isValid = false;
 			errorMessage = 'This wallet address is already linked to your account';
 		}
@@ -99,6 +103,7 @@
 <WalletOptions
 	on:walletConnected={handleWalletConnected}
 	on:walletDisconnected={handleWalletDisconnected}
+	disabled={isSubmitting}
 />
 
 {#if !connectedWallet && !$wagmiConnected}

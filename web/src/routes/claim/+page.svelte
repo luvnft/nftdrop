@@ -157,14 +157,14 @@
 			<p class="welcome-text" in:fly={{ y: -20, duration: 1000 }}>
 				Welcome, {currentUser.displayName ?? currentUser.email},
 				{#if project?.claimOpen}
-					you're all set to mint your unique collectible.
+					you're all set to claim your unique collectible.
 				{:else}
 					the project admin has closed the claiming for this project.
 				{/if}
 			</p>
 		{:else if authInitialised && !userAlreadyMinted}
 			{#if project?.claimOpen}
-				<p>Please identify yourself to mint your unique collectible!</p>
+				<p>Please identify yourself to claim your unique collectible!</p>
 			{:else}
 				<p>
 					Claiming is closed for this project but you can still sign in to make your next claim

@@ -25,7 +25,7 @@
 	}
 
 	const progress = tweened(0, {
-		duration: 10000,
+		duration: 15000,
 		easing: cubicOut
 	});
 
@@ -46,7 +46,7 @@
 			<div class="minting-progress">
 				<div class="progress-bar" style="width: {$progress * 100}%"></div>
 			</div>
-			Minting...
+			Claiming...
 		{:else if claimLimitReached}
 			Claim limit has been reached
 		{:else if project.claimOpen}
@@ -97,7 +97,7 @@
 		</p>
 
 		{#if !airdropWalletAddress}
-			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} />
+			<EthereumWalletInput on:walletAddressSubmitted={walletAddressSubmitted} autoSubmit={true} />
 		{:else}
 			<p>We will soon airdrop the NFT to your wallet <code>{airdropWalletAddress}</code></p>
 		{/if}

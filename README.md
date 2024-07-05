@@ -55,7 +55,7 @@ Mint Wave leverages a diverse set of modern technologies to create a seamless NF
 ### Frontend
 - **SvelteKit**: Fast and efficient framework for building user interfaces
 - **Firebase Auth**: Secure user authentication system with multiple login options and 3rd party providers
-- **wagmi**: SvelteKit plugin for easy wallet integration
+- **svelte-wagmi**: SvelteKit plugin for easy wallet integrations with WalletConnect, Coinbase Wallet, and more
 - **Firebase Hosting**: Reliable and scalable web hosting
 
 ### Backend
@@ -63,7 +63,7 @@ Mint Wave leverages a diverse set of modern technologies to create a seamless NF
 - **Google Cloud Platform (GCP) App Engine**: Fully managed serverless application platform
 - **Firestore DB**: Flexible, scalable NoSQL cloud database
 
-### Blockchain Integration
+### Backend Blockchain Integration
 - **ethers.js**: Complete Ethereum library and wallet implementation
 - **Solidity**: Smart contract programming language for Ethereum-based blockchains
 - **NFTAirdropTracker Contract**: Custom smart contract for managing NFT airdrops on Base or Zora networks
@@ -76,13 +76,16 @@ Mint Wave leverages a diverse set of modern technologies to create a seamless NF
 
 This stack enables Mint Wave to provide a robust, scalable, and user-friendly platform for creating and managing NFT airdrops across multiple blockchain networks.
 
+## Changes made after project submission on 2024-06-30
+
+- Board collectors instantly on-chain with Coinbase Smart Wallets if they don't have a wallet
+- Add wallet integration with wagmi, for easy airdrop wallet connection
+
 ## Next Steps
 
 To further develop and deploy Mint Wave, I plan to:
 
 1. **Enhance Airdrop Creation and Collecting**
-   - Board collectors instantly on-chain with Coinbase Smart Wallets if they don't have a wallet
-   - Add wallet integration with wagmi
    - Allow to mint NFTs straight to the collector's wallet so that copy-pasting to zora.co airdrop feature is not needed
    - Develop a user-friendly interface for NFT creation and customization
 
