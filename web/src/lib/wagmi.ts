@@ -5,7 +5,7 @@ import { PUBLIC_WALLETCONNECT_ID } from '$env/static/public';
 
 export const initWagmi = () => {
 	const config = defaultConfig({
-		appName: 'Mint Wave',
+		appName: 'airdrop',
 		chains: [base],
 		connectors: [
 			injected(),
@@ -14,7 +14,7 @@ export const initWagmi = () => {
 				showQrModal: false
 			}),
 			coinbaseWallet({
-				appName: 'Mint Wave',
+				appName: 'airdrop',
 				preference: 'all'
 			})
 		],

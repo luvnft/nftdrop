@@ -7,7 +7,7 @@
 <header>
 	<nav>
 		<div class="logo">
-			<img src="mintwave.svg" alt="Mint Wave" class="icon-inline" />Mint Wave
+			<img src="mintwave.svg" alt="AirDrop" class="icon-inline" />AirDrop
 		</div>
 		<ul>
 			<li><a href="#features">Features</a></li>
@@ -24,7 +24,7 @@
 	<section id="hero">
 		<h1>Collect & Share Digital Memories with Ease</h1>
 		<p class="hero-text">
-			Mint Wave revolutionizes event experiences by seamlessly bridging physical moments to digital
+			AirDrop revolutionizes event experiences by seamlessly bridging physical moments to digital
 			ownership. Create, distribute, and collect unique NFT memorabilia with just a QR code scan.
 			Built on Base and Zora for lightning-fast, low-cost transactions.
 		</p>
@@ -117,10 +117,10 @@
 	</section>
 
 	<section id="about">
-		<h2>About Mint Wave</h2>
+		<h2>About AirDrop</h2>
 		<div class="cta-container">
 			<p style:max-width="800px" style:text-align="center">
-				Mint Wave revolutionizes how we capture and own digital memories from live events.
+				AirDrop revolutionizes how we capture and own digital memories from live events.
 				Onboarding everybody on chain has never been easier. Our platform bridges the gap between
 				physical experiences and digital ownership, allowing event-goers to collect unique,
 				blockchain-verified memorabilia with just a scan.

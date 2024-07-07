@@ -16,7 +16,7 @@
 <header id="mintwave-header">
 	<nav>
 		<div class="logo">
-			<img src="../mintwave.svg" alt="Mint Wave" class="icon-inline" />Mint Wave
+			<img src="../mintwave.svg" alt="AirDrop" class="icon-inline" />AirDrop
 		</div>
 		{#if currentUser}
 			<ul>

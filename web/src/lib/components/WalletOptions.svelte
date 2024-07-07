@@ -21,7 +21,7 @@
 
 	onMount(() => {
 		sdk = new CoinbaseWalletSDK({
-			appName: 'Mint Wave',
+			appName: 'AirDrop',
 			appChainIds: [8453]
 		});
 		provider = sdk.makeWeb3Provider();

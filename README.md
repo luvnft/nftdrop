@@ -1,6 +1,6 @@
 # onchainsummer-nft-surprise
 
-## Mint Wave: NFT Airdrop Tracker
+## AirDrop: NFT Airdrop Tracker
 
 An easy-to-use NFT airdrop tracker and signup system built on Base.
 
@@ -8,9 +8,9 @@ This project is my submission for the [Onchain Summer Buildathon](https://www.ba
 
 Project URL: [https://nft-surprise.web.app](https://nft-surprise.web.app)
 
-## About Mint Wave
+## About AirDrop
 
-Mint Wave is a NFT Airdrop Tracker that simplifies the process of creating and distributing NFT airdrops.
+AirDrop is a NFT Airdrop Tracker that simplifies the process of creating and distributing NFT airdrops.
 
 **Key Features:**
 - Easy creation of NFT airdrops
@@ -19,18 +19,18 @@ Mint Wave is a NFT Airdrop Tracker that simplifies the process of creating and d
 - Built on Base blockchain
 - Utilizes Zora's NFT minting capabilities
 
-Mint Wave bridges the gap between NFT creators and potential recipients, making the world of blockchain-based digital assets more accessible to everyone.
+AirDrop bridges the gap between NFT creators and potential recipients, making the world of blockchain-based digital assets more accessible to everyone.
 
 ### Demo
 
-Experience Mint Wave in action with this two-part demo:
+Experience AirDrop in action with this two-part demo:
 
 #### 1. Airdrop Creator
 
 Scenario: You've created an ERC-1155 NFT on Zora.co (recorded on the Base blockchain) and want to airdrop it to your community.
 
 Steps:
-1. Use Mint Wave to generate a unique QR code for your airdrop.
+1. Use AirDrop to generate a unique QR code for your airdrop.
 2. Share this QR code with your community.
 
 [View a demo QR code created by me](https://nft-surprise.web.app/qr/?id=2g9qj6qG6eAa9CXlKk5K)
@@ -45,12 +45,12 @@ Community members can easily sign up for your free NFT airdrop by:
 
 [Try the demo airdrop sign-up](https://nft-surprise.web.app/claim/?id=2g9qj6qG6eAa9CXlKk5K)
 
-This demo showcases how Mint Wave simplifies both the creation and distribution of NFT airdrops, making the process accessible to creators and recipients alike.
+This demo showcases how AirDrop simplifies both the creation and distribution of NFT airdrops, making the process accessible to creators and recipients alike.
 
 
 ## Technology Stack
 
-Mint Wave leverages a diverse set of modern technologies to create a seamless NFT airdrop experience:
+AirDrop leverages a diverse set of modern technologies to create a seamless NFT airdrop experience:
 
 ### Frontend
 - **SvelteKit**: Fast and efficient framework for building user interfaces
@@ -74,7 +74,7 @@ Mint Wave leverages a diverse set of modern technologies to create a seamless NF
   - Mainnets: For production-ready airdrops
   - Sepolia Testnets: For testing and development
 
-This stack enables Mint Wave to provide a robust, scalable, and user-friendly platform for creating and managing NFT airdrops across multiple blockchain networks.
+This stack enables AirDrop to provide a robust, scalable, and user-friendly platform for creating and managing NFT airdrops across multiple blockchain networks.
 
 ## Changes made after project submission on 2024-06-30
 
@@ -83,7 +83,7 @@ This stack enables Mint Wave to provide a robust, scalable, and user-friendly pl
 
 ## Next Steps
 
-To further develop and deploy Mint Wave, I plan to:
+To further develop and deploy AirDrop, I plan to:
 
 1. **Enhance Airdrop Creation and Collecting**
    - Allow to mint NFTs straight to the collector's wallet so that copy-pasting to zora.co airdrop feature is not needed

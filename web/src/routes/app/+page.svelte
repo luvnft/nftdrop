@@ -50,7 +50,7 @@
 </script>
 
 <svelte:head>
-	<title>Mint Wave App</title>
+	<title>AirDrop App</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </svelte:head>
 
@@ -77,7 +77,7 @@
 			<Loader />
 		{:else}
 			<div class="auth-container" in:fly={{ y: 20, duration: 500 }}>
-				<h1 class="gradient-text">Welcome to Mint Wave</h1>
+				<h1 class="gradient-text">Welcome to AirDrop</h1>
 				<p>Sign in to track your collected NFTs or create and manage NFT airdrop projects.</p>
 				<AuthButtons />
 			</div>
